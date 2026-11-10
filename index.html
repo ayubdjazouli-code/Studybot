@@ -60,6 +60,9 @@ footer{padding:28px 12px}
 
 /* EduNova Plus — présentation des futures offres */
 .plus-hero{background:radial-gradient(circle at 90% 5%,#6e8cf2 0,transparent 35%),linear-gradient(125deg,#111d43,#2949ad);color:#fff;padding:27px;border-radius:22px;margin-bottom:24px}.plus-kicker{font-size:.72rem;letter-spacing:.14em;font-weight:850;color:#c4d2ff}.plus-hero h2{font-size:2rem;margin:9px 0}.plus-hero p{color:#e3eaff;max-width:650px}.plus-promise{display:flex;align-items:center;gap:10px;margin-top:18px;padding:12px 14px;background:#ffffff17;border:1px solid #ffffff30;border-radius:13px;width:fit-content}.plus-section-title{margin:25px 0 14px}.plus-section-title>span{font-size:.7rem;letter-spacing:.13em;font-weight:850;color:#6379bd}.plus-section-title h2{font-size:1.35rem;margin:4px 0}.plus-section-title p{font-size:.9rem}.plus-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.plus-benefit{display:flex;gap:12px;padding:15px;background:#fff;border:1px solid var(--line);border-radius:15px}.plus-benefit>span{display:grid;place-items:center;flex:0 0 42px;height:42px;background:#eef2ff;border-radius:12px;font-size:1.35rem}.plus-benefit b{font-size:.96rem}.plus-benefit p{font-size:.83rem;margin:4px 0 0}.plus-pricing{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}.plus-plan{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px}.plus-plan-featured{border:2px solid #536fda;box-shadow:0 8px 24px #3155c81a}.plus-plan-label{font-size:.66rem;letter-spacing:.1em;font-weight:850;color:#6579b8}.plus-plan h3{font-size:1.1rem;margin:8px 0}.plus-price{font-size:1.8rem;font-weight:900;letter-spacing:-.05em;color:#213e9a}.plus-price small{font-size:.82rem;font-weight:500;color:var(--muted);letter-spacing:0}.plus-saving{font-size:.75rem;color:#3155a7;background:#eef2ff;border-radius:9px;padding:7px;margin:5px 0 9px}.plus-plan>p{font-size:.83rem;min-height:40px}.plus-plan ul{padding-left:19px;font-size:.82rem;line-height:1.65;flex:1}.plus-plan-note{font-size:.75rem;color:var(--muted);padding-top:10px;border-top:1px solid var(--line)}.plus-cta{width:100%;background:#3155c8;color:#fff;margin-top:12px;opacity:.6;cursor:not-allowed}.plus-cta-light{background:#e9efff;color:#2444ad}.plus-faq{margin-top:18px;padding:18px;background:#f0f4ff;border:1px solid #dce5ff;border-radius:15px}.plus-faq h3{font-size:.95rem;margin:0 0 4px}.plus-faq p{font-size:.85rem;margin:0 0 14px}.plus-faq p:last-child{margin-bottom:0}.plus-legal{margin-top:13px}@media(max-width:700px){.plus-hero{padding:22px 18px}.plus-benefits{grid-template-columns:1fr}.plus-pricing{grid-template-columns:1fr}.plus-plan-featured{order:-1}.plus-plan>p{min-height:0}}
+
+/* Fiches de révision enrichies */
+.lesson-card{border:1px solid var(--line);overflow:hidden}.lesson-tag{display:inline-block;font-size:.68rem;letter-spacing:.1em;font-weight:850;color:#5269b5;background:#eef2ff;padding:6px 9px;border-radius:8px;margin-bottom:8px}.lesson-card h2{line-height:1.3}.lesson-card h3{margin-top:18px}.lesson-tip{padding:12px 14px;background:#f0f5ff;border-left:3px solid #5574d7;border-radius:9px;font-size:.88rem;margin:14px 0}.lesson-exercise{padding:10px 12px;margin:8px 0;border:1px solid var(--line);border-radius:10px}.lesson-exercise summary{cursor:pointer;font-weight:650;line-height:1.45}.lesson-exercise p{margin:10px 0 2px}
 </style></head><body>
 <header><div class="wrap"><nav><div class="brand"><img src="icons/icon.svg" alt="" style="width:30px;height:30px;vertical-align:middle;border-radius:9px;margin-right:8px">EduNova</div><button id="install" class="secondary hidden">Installer</button></nav><h1>Révise mieux.<br>Sans te compliquer la vie.</h1><p>Transforme tes cours en fiches, cartes mémoire et quiz. Gratuitement.</p></div></header>
 <main class="wrap"><div class="tabs"><button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="notes">Mes cours</button><button class="tab" data-tab="cards">Cartes mémoire</button><button class="tab" data-tab="quiz">Quiz</button><button class="tab" data-tab="library">Fiches & exercices</button><button class="tab" data-tab="plus">EduNova Plus</button><button class="tab" data-tab="alllevels">Tous les niveaux</button><button class="tab" data-tab="tools">Outils</button></div>
@@ -357,13 +360,99 @@ for(const g of Object.keys(BONUS_LEVEL_QUIZZES)) EXTRA_LEVEL_QUIZZES[g].push(...
 
 function openLevel(grade,subject){document.getElementById('gradeSelect').value=grade==='Toutes'?'6e':grade;document.getElementById('subjectSelect').value=subject;renderLevelLibrary();tab('alllevels');document.getElementById('alllevels').scrollIntoView({behavior:'smooth',block:'start'});}
 function updateHomeCatalog(){let lessons=0,exercises=0,quizzes=0;for(const g of Object.keys(LEVEL_DATA)){const rows=LEVEL_DATA[g].concat(EXTRA_LEVEL_DATA[g]||[]);lessons+=rows.length;exercises+=rows.reduce((n,x)=>n+x[3].length,0);quizzes+=LEVEL_QUIZZES[g].length+(EXTRA_LEVEL_QUIZZES[g]||[]).length;}document.getElementById('homeLessons').textContent=lessons;document.getElementById('homeExercises').textContent=exercises;document.getElementById('homeQuizzes').textContent=quizzes;}
+
+// Nouvelle série de révisions : notions, méthodes et exercices supplémentaires pour chaque niveau.
+const MORE_LEVEL_DATA={
+"6e":[
+["Mathématiques","Périmètre et aire","Le périmètre est la longueur du contour. Pour un rectangle : P = 2 × (longueur + largeur). Son aire vaut longueur × largeur. Pour un carré de côté c : P = 4 × c et aire = c × c. Attention : le périmètre s’exprime en cm ou m, l’aire en cm² ou m².",[["Un rectangle mesure 8 cm sur 3 cm. Calcule son périmètre.","2 × (8 + 3) = 22 cm."],["Calcule l’aire d’un rectangle de 7 cm sur 4 cm.","7 × 4 = 28 cm²."],["Un carré a un côté de 5 cm. Donne son périmètre et son aire.","P = 20 cm et aire = 25 cm²."],["Un jardin rectangulaire mesure 9 m sur 6 m. Quelle est son aire ?","9 × 6 = 54 m²."]]],
+["Français","Accord dans le groupe nominal","Dans un groupe nominal, le déterminant, le nom et l’adjectif s’accordent en genre et en nombre. On repère d’abord le nom noyau, puis on vérifie les mots qui l’accompagnent : un grand arbre, des grandes maisons.",[["Mets au pluriel : « le petit cheval ».","Les petits chevaux."],["Accorde : « une robe (bleu) ».","Une robe bleue."],["Mets au féminin : « un voisin attentif ».","Une voisine attentive."],["Corrige : « des jolie fleurs ».","Des jolies fleurs."]]]
+],
+"5e":[
+["Mathématiques","Proportionnalité et pourcentages","Deux grandeurs sont proportionnelles si on passe de l’une à l’autre en multipliant toujours par le même nombre. Pour calculer 10 %, on divise par 10 ; 25 % correspond au quart ; 50 % à la moitié.",[["4 stylos coûtent 6 €. Combien coûtent 10 stylos au même prix unitaire ?","6 ÷ 4 = 1,50 € ; 10 × 1,50 = 15 €."],["Calcule 10 % de 80.","80 ÷ 10 = 8."],["Calcule 25 % de 60.","60 ÷ 4 = 15."],["Un article à 40 € baisse de 5 €. Quel est son nouveau prix ?","40 − 5 = 35 €."]]],
+["Français","Le passé composé","Le passé composé se forme avec l’auxiliaire avoir ou être au présent suivi du participe passé. Avec être, le participe passé s’accorde généralement avec le sujet. Avec avoir, il ne s’accorde généralement pas avec le sujet.",[["Conjugue « finir » avec nous au passé composé.","Nous avons fini."],["Conjugue « partir » avec elles au passé composé.","Elles sont parties."],["Complète : « Il ___ (prendre) son sac. »","Il a pris son sac."],["Corrige : « Elles sont arrivé en retard. »","Elles sont arrivées en retard."]]]
+],
+"4e":[
+["Mathématiques","Puissances de 10 et écriture scientifique","Une puissance de 10 permet d’écrire simplement les grands et petits nombres : 10³ = 1 000 et 10⁻² = 0,01. En écriture scientifique, un nombre s’écrit a × 10ⁿ avec 1 ≤ a < 10.",[["Écris 100 000 sous forme de puissance de 10.","10⁵."],["Calcule 3 × 10².","300."],["Écris 0,004 en écriture scientifique.","4 × 10⁻³."],["Calcule 2,5 × 10³.","2 500."]]],
+["Sciences","Atomes, molécules et transformations chimiques","Une molécule est constituée d’atomes liés entre eux. Lors d’une transformation chimique, les atomes sont conservés et se réorganisent pour former de nouvelles molécules. Les réactifs sont consommés et les produits se forment.",[["Combien d’atomes au total contient une molécule de CO₂ ?","3 atomes : un carbone et deux oxygènes."],["Dans une réaction, comment appelle-t-on les substances de départ ?","Les réactifs."],["Les atomes disparaissent-ils lors d’une transformation chimique ?","Non, ils se conservent et se réorganisent."],["Que représente H₂ dans une formule chimique ?","Une molécule constituée de deux atomes d’hydrogène."]]]
+],
+"3e":[
+["Mathématiques","Équations du premier degré","Pour résoudre une équation, on effectue la même opération aux deux membres afin d’isoler l’inconnue. Exemple : 3x + 5 = 20, donc 3x = 15 puis x = 5. On vérifie en remplaçant x dans l’équation de départ.",[["Résous 2x + 7 = 19.","2x = 12, donc x = 6."],["Résous 5x = 35.","x = 7."],["Résous 4x − 3 = 13.","4x = 16, donc x = 4."],["Vérifie si x = 3 est solution de 2x + 1 = 7.","Oui : 2 × 3 + 1 = 7."]]],
+["Français","Argumenter et organiser un paragraphe","Un paragraphe argumenté présente une idée directrice, la justifie avec un argument, puis l’illustre par un exemple précis. Les connecteurs (« d’abord », « en effet », « par exemple », « ainsi ») rendent le raisonnement clair.",[["Quel élément doit-on présenter en premier dans un paragraphe argumenté ?","L’idée ou l’argument principal."],["À quoi sert un exemple précis ?","À illustrer et rendre concret l’argument."],["Donne un connecteur qui introduit une conséquence.","Donc, ainsi, par conséquent."],["Pourquoi faut-il relier les phrases avec des connecteurs ?","Pour rendre le raisonnement logique et facile à suivre."]]]
+],
+"2nde":[
+["Mathématiques","Équations de droites","Une fonction affine s’écrit f(x) = ax + b. Son coefficient directeur a indique la variation de y quand x augmente de 1 ; b est l’ordonnée à l’origine. Sa représentation graphique est une droite.",[["Pour f(x) = 3x + 2, donne le coefficient directeur.","a = 3."],["Calcule f(4) si f(x) = 2x − 5.","f(4) = 8 − 5 = 3."],["Quelle est l’ordonnée à l’origine de y = −4x + 7 ?","7."],["La droite passe par A(0 ; 3) et B(2 ; 7). Calcule son coefficient directeur.","(7 − 3) ÷ (2 − 0) = 2."]]],
+["Sciences","Mouvement et vitesse","La vitesse moyenne est le quotient de la distance par la durée : v = d ÷ t. Il faut harmoniser les unités. Un mouvement est rectiligne si la trajectoire est une ligne droite ; il est uniforme si la vitesse reste constante.",[["Un véhicule parcourt 150 km en 2 h. Quelle est sa vitesse moyenne ?","150 ÷ 2 = 75 km/h."],["Un coureur avance à 5 m/s pendant 12 s. Quelle distance parcourt-il ?","d = 5 × 12 = 60 m."],["Comment qualifie-t-on une trajectoire en ligne droite ?","Rectiligne."],["Un objet parcourt des distances égales pendant des durées égales. Son mouvement est-il uniforme ?","Oui, sa vitesse est constante."]]]
+],
+"1re":[
+["Mathématiques","Dérivation : tangente et variations","La dérivée f’(a) donne le coefficient directeur de la tangente à la courbe au point d’abscisse a. Si f’ est positive sur un intervalle, f y est croissante ; si f’ est négative, f y est décroissante.",[["Si f’(2) = 4, quel est le coefficient directeur de la tangente en x = 2 ?","4."],["Si f’ est négative sur un intervalle, comment varie f ?","f est décroissante sur cet intervalle."],["Pour f(x) = x³, quelle est la dérivée f’(x) ?","f’(x) = 3x²."],["Pour f(x) = 2x² − 3x, calcule f’(x).","f’(x) = 4x − 3."]]],
+["Français","Analyser une citation dans un commentaire","Une analyse littéraire ne se limite pas à repérer un procédé. Il faut citer brièvement le texte, nommer le procédé, expliquer son effet et relier cet effet à l’interprétation. Une citation doit toujours servir une idée.",[["Après avoir cité une métaphore, que faut-il expliquer ?","L’image créée et son effet sur le sens du passage."],["Pourquoi une citation doit-elle être courte et précise ?","Pour appuyer exactement l’analyse sans remplacer le commentaire."],["Que doit apporter une transition entre deux axes ?","Un lien logique entre les idées et la progression de l’analyse."],["Quel est le rôle d’une problématique ?","Poser la question directrice à laquelle le commentaire répond."]]]
+],
+"Terminale":[
+["Mathématiques","Dérivée et convexité","La dérivée seconde f’’ renseigne sur la convexité : si f’’ est positive sur un intervalle, f est convexe ; si f’’ est négative, f est concave. Un point d’inflexion correspond à un changement de convexité.",[["Si f’’(x) est positive sur un intervalle, quelle est la convexité de f ?","f est convexe sur cet intervalle."],["Pour f(x) = x³, calcule f’’(x).","f’(x) = 3x² puis f’’(x) = 6x."],["Que caractérise un point d’inflexion ?","Un changement de convexité de la courbe."],["Pour f(x) = 2x², f’’(x) vaut combien ?","f’’(x) = 4."]]],
+["Histoire-géographie","Mondialisation : acteurs et débats","La mondialisation met en relation des territoires par des flux de marchandises, de capitaux, d’informations et de personnes. Les firmes transnationales organisent une partie de la production à l’échelle mondiale. Les effets sont inégaux selon les territoires et les populations.",[["Comment appelle-t-on une entreprise présente dans plusieurs pays ?","Une firme transnationale (FTN)."],["Cite deux types de flux mondialisés.","Par exemple les marchandises et les capitaux."],["Pourquoi les effets de la mondialisation sont-ils inégaux ?","Les territoires ne disposent pas des mêmes ressources, infrastructures et pouvoirs de décision."],["Quel rôle jouent les ports dans les échanges mondiaux ?","Ils sont des interfaces majeures pour le transport maritime des marchandises."]]]
+]
+};
+for(const grade of Object.keys(MORE_LEVEL_DATA)) EXTRA_LEVEL_DATA[grade].push(...MORE_LEVEL_DATA[grade]);
+const MORE_LEVEL_QUIZZES={
+"6e":[
+["Un rectangle mesure 6 cm sur 4 cm. Quelle est son aire ?",["10 cm²","20 cm²","24 cm²","48 cm²"],2,"L’aire d’un rectangle vaut longueur × largeur : 6 × 4 = 24 cm²."],
+["Quel est le périmètre d’un carré de côté 7 cm ?",["14 cm","21 cm","28 cm","49 cm"],2,"Le périmètre vaut 4 × 7 = 28 cm."],
+["Quelle phrase est correctement accordée ?",["Des grand arbres","Des grands arbres","Des grandes arbre","De grand arbres"],1,"Le déterminant, l’adjectif et le nom sont au masculin pluriel."],
+["Quel est le féminin de « attentif » ?",["attentife","attentive","attentifs","attention"],1,"Le féminin de attentif est attentive."],
+["Combien font 3,6 + 2,45 ?",["5,05","6,05","6,5","7,05"],1,"3,60 + 2,45 = 6,05."]
+],
+"5e":[
+["25 % de 80 représente…",["10","15","20","25"],2,"25 % correspond à un quart : 80 ÷ 4 = 20."],
+["4 cahiers coûtent 10 €. Combien coûtent 8 cahiers au même tarif ?",["15 €","18 €","20 €","24 €"],2,"La quantité double, donc le prix double : 20 €."],
+["Quel auxiliaire utilise-t-on dans « Elles sont parties » ?",["avoir","être","faire","aller"],1,"Le passé composé de partir se construit avec être."],
+["Quelle forme est correcte ?",["Nous avons finies","Nous sommes fini","Nous avons fini","Nous avons finissons"],2,"Finir avec nous au passé composé : nous avons fini."],
+["Calcule 15 % de 200.",["15","20","30","45"],2,"10 % de 200 vaut 20 et 5 % vaut 10, donc 30."]
+],
+"4e":[
+["Quelle est l’écriture de 10 000 en puissance de 10 ?",["10²","10³","10⁴","10⁵"],2,"10⁴ = 10 × 10 × 10 × 10 = 10 000."],
+["Calcule 4 × 10³.",["400","4 000","40 000","400 000"],1,"10³ vaut 1 000, donc 4 × 1 000 = 4 000."],
+["Dans une transformation chimique, que deviennent les atomes ?",["Ils disparaissent","Ils se transforment en énergie","Ils se réorganisent","Ils sont créés à partir de rien"],2,"Les atomes sont conservés et se réorganisent en nouvelles molécules."],
+["Combien d’atomes contient une molécule de H₂O ?",["2","3","4","5"],1,"H₂O contient deux atomes d’hydrogène et un d’oxygène."],
+["Écris 0,006 en notation scientifique.",["6 × 10⁻²","6 × 10⁻³","6 × 10²","0,6 × 10⁻²"],1,"0,006 = 6 × 0,001 = 6 × 10⁻³."]
+],
+"3e":[
+["Résous 3x + 4 = 19.",["x = 3","x = 4","x = 5","x = 6"],2,"3x = 15, donc x = 5."],
+["Résous 7x − 8 = 20.",["x = 2","x = 4","x = 6","x = 8"],1,"7x = 28, donc x = 4."],
+["Quelle est la bonne vérification pour x = 4 dans 2x + 3 = 11 ?",["2 + 4 + 3 = 11","2 × 4 + 3 = 11","2 × 3 + 4 = 11","4 + 3 = 11"],1,"En remplaçant x par 4, 2 × 4 + 3 = 11."],
+["Quel connecteur introduit généralement un exemple ?",["Cependant","Par exemple","Donc","Pourtant"],1,"« Par exemple » annonce une illustration."],
+["Quelle est la solution de 5x + 5 = 30 ?",["x = 4","x = 5","x = 6","x = 7"],1,"5x = 25, donc x = 5."]
+],
+"2nde":[
+["Pour f(x) = 4x − 3, quelle est l’image de 2 ?",["3","5","8","11"],1,"f(2) = 4 × 2 − 3 = 5."],
+["Quelle est l’ordonnée à l’origine de y = 6x − 2 ?",["6","−2","2","−6"],1,"Dans y = ax + b, l’ordonnée à l’origine est b, ici −2."],
+["Une voiture parcourt 180 km en 3 h. Sa vitesse moyenne est…",["30 km/h","45 km/h","60 km/h","90 km/h"],2,"180 ÷ 3 = 60 km/h."],
+["Un cycliste roule à 4 m/s pendant 15 s. Quelle distance parcourt-il ?",["19 m","45 m","60 m","75 m"],2,"Distance = vitesse × durée = 4 × 15 = 60 m."],
+["Une droite passe par (0 ; 2) et (3 ; 8). Son coefficient directeur vaut…",["1","2","3","6"],1,"(8 − 2) ÷ (3 − 0) = 6 ÷ 3 = 2."]
+],
+"1re":[
+["Si f’(x) = 3x², quelle est f’(2) ?",["6","9","12","18"],2,"3 × 2² = 12."],
+["Si f’ est positive sur un intervalle, f est…",["décroissante","constante","croissante","convexe automatiquement"],2,"Une dérivée positive indique une fonction croissante."],
+["Quelle est la dérivée de f(x) = 5x² ?",["5x","10x","10x²","x²"],1,"La dérivée de ax² est 2ax, donc 10x."],
+["Dans un commentaire, une citation sert surtout à…",["Remplacer l’analyse","Illustrer une idée analysée","Remplir le paragraphe","Éviter la problématique"],1,"Une citation courte fournit une preuve à commenter."],
+["Si f’(a) = −2, quel est le coefficient directeur de la tangente en a ?",["−2","0","2","a"],0,"La valeur de la dérivée en a est le coefficient directeur de la tangente."]
+],
+"Terminale":[
+["Pour f(x) = x³, quelle est la dérivée seconde ?",["3x","6x","6","3x²"],1,"f’(x) = 3x² et f’’(x) = 6x."],
+["Si f’’ est négative sur un intervalle, f est…",["convexe","concave","croissante","constante"],1,"Une dérivée seconde négative indique une fonction concave."],
+["Un point d’inflexion correspond à…",["un maximum obligatoire","un minimum obligatoire","un changement de convexité","une tangente verticale obligatoire"],2,"La convexité change de part et d’autre du point."],
+["Une entreprise implantée dans plusieurs pays est appelée…",["une PME locale","une FTN","une ONG","une institution publique"],1,"FTN signifie firme transnationale."],
+["Lequel est un flux de la mondialisation ?",["Une frontière montagneuse","Un échange de marchandises","Une saison climatique","Une langue régionale"],1,"Les marchandises circulent entre les territoires dans le cadre des échanges mondiaux."]
+]
+};
+for(const grade of Object.keys(MORE_LEVEL_QUIZZES)) EXTRA_LEVEL_QUIZZES[grade].push(...MORE_LEVEL_QUIZZES[grade]);
+
 function renderLevelLibrary(){
  const grade=document.getElementById('gradeSelect').value,subject=document.getElementById('subjectSelect').value;
  const entries=LEVEL_DATA[grade].concat(EXTRA_LEVEL_DATA[grade]||[]).filter(x=>subject==='Toutes'||x[0]===subject);
  document.getElementById('lessonCount').textContent=entries.length;
  document.getElementById('exerciseCount').textContent=entries.reduce((n,x)=>n+x[3].length,0);
  document.getElementById('quizCount').textContent=LEVEL_QUIZZES[grade].length+(EXTRA_LEVEL_QUIZZES[grade]||[]).length;
- document.getElementById('levelContent').innerHTML=entries.map((x,i)=>'<div class="card"><h2>'+safe(x[0])+' — '+safe(x[1])+'</h2><h3>📄 Fiche de révision</h3><p>'+safe(x[2])+'</p><h3>✍️ Exercices corrigés</h3>'+x[3].map((e,j)=>'<details><summary>Exercice '+(j+1)+' : '+safe(e[0])+'</summary><p><b>Correction :</b> '+safe(e[1])+'</p></details>').join('')+'</div>').join('');
+ document.getElementById('levelContent').innerHTML=entries.map((x,i)=>'<div class="card lesson-card"><div class="lesson-tag">FICHE DE COURS • '+safe(grade.toUpperCase())+'</div><h2>'+safe(x[0])+' — '+safe(x[1])+'</h2><h3>📘 À retenir</h3><p>'+safe(x[2])+'</p><div class="lesson-tip"><b>💡 Méthode :</b> Lis la fiche, cache-la et essaie de reformuler les idées importantes avec tes propres mots. Puis fais les exercices sans regarder la correction.</div><h3>✍️ Exercices corrigés ('+x[3].length+')</h3>'+x[3].map((e,j)=>'<details class="lesson-exercise"><summary>Exercice '+(j+1)+' : '+safe(e[0])+'</summary><p><b>Correction expliquée :</b> '+safe(e[1])+'</p></details>').join('')+'</div>').join('');
 }
 document.getElementById('gradeSelect').addEventListener('change',renderLevelLibrary);
 document.getElementById('subjectSelect').addEventListener('change',renderLevelLibrary);
