@@ -527,6 +527,82 @@ function startQuiz(){let pool=data.cards.slice();if(!pool.length){document.getEl
 function question(){let area=document.getElementById('quizArea');if(qi>=qs.length){area.innerHTML='<h3>Quiz terminé !</h3><p>Ton score : <b>'+score+' / '+qs.length+'</b></p>';return}let c=qs[qi],opts=[c.a],other=data.cards.filter(x=>x.a.toLowerCase()!==c.a.toLowerCase()).map(x=>x.a);while(opts.length<Math.min(4,other.length+1)){let v=other[Math.floor(Math.random()*other.length)];if(v&&!opts.includes(v))opts.push(v);else break}opts.sort(()=>Math.random()-.5);area.innerHTML='<p class="small">Question '+(qi+1)+'/'+qs.length+'</p><h3>'+safe(c.q)+'</h3>'+opts.map(o=>'<button class="answer" data-v="'+encodeURIComponent(o)+'">'+safe(o)+'</button>').join('');area.querySelectorAll('button').forEach(b=>b.onclick=()=>{let ok=decodeURIComponent(b.dataset.v).toLowerCase()===c.a.toLowerCase();if(ok)score++;b.textContent+=(ok?' ✓':' — Réponse : '+c.a);area.querySelectorAll('button').forEach(x=>x.disabled=true);let n=document.createElement('button');n.className='primary';n.textContent='Continuer';n.onclick=()=>{qi++;question()};area.appendChild(n)})}
 render();let promptEvent=null,install=document.getElementById('install');window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();promptEvent=e;install.classList.remove('hidden')});install.onclick=async()=>{if(promptEvent){promptEvent.prompt();await promptEvent.userChoice;promptEvent=null}else alert('Sur iPhone : Partager puis « Sur l’écran d’accueil ».')};if('serviceWorker'in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
+
+/* EduNova : progression, assistant guide, langues, scanner et examens */
+const EDU_XP_KEY='edunova_xp_v1',EDU_HISTORY_KEY='edunova_exam_history_v1';
+let eduXP=Number(localStorage.getItem(EDU_XP_KEY)||0),examHistory=JSON.parse(localStorage.getItem(EDU_HISTORY_KEY)||'[]');
+function awardXP(n){eduXP+=n;localStorage.setItem(EDU_XP_KEY,String(eduXP));drawXP()}
+function drawXP(){
+ const level=Math.floor(eduXP/100)+1,within=eduXP%100;
+ const label=document.getElementById('xpLabel'),lvl=document.getElementById('xpLevel'),bar=document.getElementById('xpBar'),next=document.getElementById('xpNext'),stat=document.getElementById('statXp'),ach=document.getElementById('achievements');
+ if(label)label.textContent=eduXP+' XP • '+(level<3?'Débutant':level<6?'Apprenti':level<10?'Confirmé':'Expert');
+ if(lvl)lvl.textContent='Niv. '+level;if(bar)bar.style.width=within+'%';if(next)next.textContent=(100-within)+' XP pour le niveau suivant.';
+ if(stat)stat.textContent=eduXP;
+ if(ach){const items=[eduXP>=20?'🌱 Premier pas':null,eduXP>=100?'🔥 100 XP':null,eduXP>=300?'🏅 300 XP':null,examHistory.length>=1?'🎓 Premier examen':null,examHistory.some(x=>x.score>=80)?'⭐ 80 % en examen':null].filter(Boolean);ach.innerHTML=items.length?items.map(x=>'<span>'+x+'</span>').join(''):'<span>Termine une activité pour débloquer ton premier badge.</span>'}
+}
+function drawStats(){
+ const scores=examHistory.map(x=>x.score),best=scores.length?Math.max(...scores):null;
+ const a=document.getElementById('statExams'),b=document.getElementById('statBest'),hist=document.getElementById('statsHistory'),rank=document.getElementById('localRanking');
+ if(a)a.textContent=examHistory.length;if(b)b.textContent=best===null?'—':best+'%';
+ if(hist)hist.textContent=examHistory.length?'Derniers résultats : '+examHistory.slice(-5).reverse().map(x=>x.score+'% ('+x.date+')').join(' • '):'Tes résultats apparaîtront ici après tes premiers examens blancs.';
+ if(rank)rank.innerHTML=examHistory.slice().sort((x,y)=>y.score-x.score).slice(0,5).map((x,i)=>'<div class="item"><b>'+(i+1)+'. '+x.score+' %</b><span class="small">'+safe(x.date)+'</span></div>').join('')||'Aucun score enregistré pour le moment.';
+ drawXP();
+}
+function saveExamScore(score,total){examHistory.push({score:Math.round(score/total*100),date:new Date().toLocaleDateString('fr-FR'),points:score,total});examHistory=examHistory.slice(-30);localStorage.setItem(EDU_HISTORY_KEY,JSON.stringify(examHistory));awardXP(20+Math.round(score/total*30));drawStats()}
+const scanInput=document.getElementById('scanImage');
+if(scanInput)scanInput.addEventListener('change',()=>{const f=scanInput.files&&scanInput.files[0],box=document.getElementById('scanPreview');if(!f){box.textContent='Aucune photo sélectionnée.';return}if(!f.type.startsWith('image/')){box.textContent='Choisis un fichier image.';return}const reader=new FileReader();reader.onload=()=>{box.innerHTML='<img alt="Aperçu de ton cours" src="'+reader.result+'">';};reader.readAsDataURL(f)});
+document.getElementById('askAssistant').addEventListener('click',()=>{
+ const q=document.getElementById('assistantQuestion').value.trim(),subject=document.getElementById('assistantSubject').value,level=document.getElementById('assistantLevel').value,out=document.getElementById('assistantAnswer');
+ if(!q){out.textContent='Écris une question pour commencer.';out.classList.remove('hidden');return}
+ let method='';
+ if(subject==='Mathématiques')method='1. Repère les données et ce que tu dois trouver.\n2. Choisis la règle ou la formule adaptée.\n3. Remplace les lettres par les valeurs, puis calcule étape par étape.\n4. Vérifie ton résultat avec l’opération inverse ou un ordre de grandeur.';
+ else if(subject==='Français')method='1. Lis la consigne et repère le verbe demandé.\n2. Identifie les mots importants et leur rôle.\n3. Appuie ta réponse sur un exemple précis du texte.\n4. Relis pour vérifier les accords et la ponctuation.';
+ else if(subject==='Anglais')method='1. Repère le sujet (I, you, he, she…).\n2. Identifie le temps demandé.\n3. Vérifie l’ordre des mots et la forme du verbe.\n4. Relis la phrase à voix haute.';
+ else if(subject==='Histoire-géographie')method='1. Situe le sujet dans le temps ou dans l’espace.\n2. Définis les mots-clés.\n3. Organise ta réponse en idées courtes.\n4. Ajoute un exemple ou un repère précis.';
+ else method='1. Définis le phénomène ou la notion.\n2. Repère les observations et les données.\n3. Explique le lien de cause à effet.\n4. Conclus avec une phrase qui répond à la question.';
+ out.textContent='AIDE POUR '+subject.toUpperCase()+' • '+level+'\n\nTa question : '+q+'\n\nMéthode conseillée :\n'+method+'\n\nMini-défi : reformule la notion en deux phrases, puis invente un exemple.\n\nAstuce : si tu colles l’énoncé complet, tu peux mieux appliquer ces étapes.';
+ out.classList.remove('hidden');awardXP(2);
+});
+const vocab={en:[['hello','bonjour'],['good morning','bonjour (le matin)'],['school','école'],['homework','devoirs'],['to learn','apprendre'],['to understand','comprendre'],['book','livre'],['friend','ami'],['yesterday','hier'],['tomorrow','demain'],['always','toujours'],['because','parce que'],['beautiful','beau / belle'],['to improve','s’améliorer'],['knowledge','connaissance']],es:[['hola','bonjour / salut'],['buenos días','bonjour (le matin)'],['escuela','école'],['deberes','devoirs'],['aprender','apprendre'],['entender','comprendre'],['libro','livre'],['amigo','ami'],['ayer','hier'],['mañana','demain'],['siempre','toujours'],['porque','parce que'],['bonito','joli'],['mejorar','améliorer'],['conocimiento','connaissance']]};
+let vocabIndex=0,vocabRevealed=false,vocabCount=0;
+function showVocab(){const lang=document.getElementById('languageChoice').value,list=vocab[lang];vocabIndex=(vocabIndex+list.length)%list.length;vocabRevealed=false;document.getElementById('languageCard').textContent=list[vocabIndex][0];document.getElementById('languageProgress').textContent='Mot '+(vocabIndex+1)+' sur '+list.length+' • '+vocabCount+' mots travaillés.'}
+document.getElementById('languageStart').onclick=()=>{vocabIndex=0;vocabCount=0;showVocab()};
+document.getElementById('languageReveal').onclick=()=>{const list=vocab[document.getElementById('languageChoice').value];if(!vocabRevealed){document.getElementById('languageCard').textContent=list[vocabIndex][0]+' = '+list[vocabIndex][1];vocabRevealed=true;vocabCount++;document.getElementById('languageProgress').textContent='Mot '+(vocabIndex+1)+' sur '+list.length+' • '+vocabCount+' mots travaillés.';awardXP(1)}};
+document.getElementById('languageNext').onclick=()=>{vocabIndex++;showVocab()};
+document.getElementById('languageChoice').onchange=()=>{vocabIndex=0;showVocab()};
+let examQuestions=[],examIndex=0,examScore=0,examSeconds=600,examClock=null,examLocked=false;
+function endExam(reason){
+ if(examClock){clearInterval(examClock);examClock=null}
+ examLocked=true;const area=document.getElementById('examArea'),status=document.getElementById('examStatus');
+ if(examQuestions.length){status.textContent=reason+' • Résultat : '+examScore+' / '+examQuestions.length;area.innerHTML='<p><b>Score final : '+examScore+'/'+examQuestions.length+' ('+Math.round(examScore/examQuestions.length*100)+' %)</b></p><p>'+ (examScore>=8?'Excellent travail !':examScore>=5?'Bien joué, continue tes révisions.':'Relis les fiches puis réessaie.')+'</p>';saveExamScore(examScore,examQuestions.length)}
+}
+function renderExam(){
+ const area=document.getElementById('examArea'),status=document.getElementById('examStatus');
+ if(examIndex>=examQuestions.length){endExam('Examen terminé');return}
+ const q=examQuestions[examIndex];status.textContent='Temps restant : '+Math.floor(examSeconds/60)+':'+String(examSeconds%60).padStart(2,'0')+' • Question '+(examIndex+1)+'/'+examQuestions.length;
+ area.innerHTML='<h3>'+safe(q[0])+'</h3>'+q[1].map((v,i)=>'<button class="answer" data-exam="'+i+'">'+safe(v)+'</button>').join('');
+ area.querySelectorAll('[data-exam]').forEach(btn=>btn.onclick=()=>{if(examLocked)return;if(Number(btn.dataset.exam)===q[2])examScore++;examIndex++;renderExam()});
+}
+document.getElementById('startExam').onclick=()=>{
+ if(examClock)clearInterval(examClock);
+ const grade=document.getElementById('gradeSelect').value;
+ examQuestions=LEVEL_QUIZZES[grade].concat(EXTRA_LEVEL_QUIZZES[grade]||[]).slice().sort(()=>Math.random()-.5).slice(0,10);
+ examIndex=0;examScore=0;examSeconds=600;examLocked=false;renderExam();
+ examClock=setInterval(()=>{examSeconds--;if(examSeconds<=0)endExam('Temps écoulé');else{const s=document.getElementById('examStatus');if(s)s.textContent='Temps restant : '+Math.floor(examSeconds/60)+':'+String(examSeconds%60).padStart(2,'0')+' • Question '+(examIndex+1)+'/'+examQuestions.length}},1000);
+};
+document.getElementById('stopExam').onclick=()=>{if(examQuestions.length&&!examLocked)endExam('Examen arrêté');else{if(examClock)clearInterval(examClock);examClock=null;document.getElementById('examArea').textContent='';document.getElementById('examStatus').textContent='Prêt pour ton examen blanc.'}};
+document.getElementById('smartSuggest').onclick=()=>{
+ const pending=tasks.filter(t=>!t.done),history=examHistory.slice().sort((a,b)=>a.score-b.score),avg=grades.length?grades.reduce((s,g)=>s+g.note*g.coef,0)/grades.reduce((s,g)=>s+g.coef,0):null;
+ let msg=pending.length?'Commence par : '+pending[0].text+'.':history.length&&history[0].score<70?'Refais un examen blanc et relis les fiches du niveau sélectionné : ton dernier score le plus faible est de '+history[0].score+' %.':avg!==null&&avg<12?'Reprends une notion de ta matière où tu as le plus de difficultés, puis fais trois exercices corrigés.':'Choisis une fiche dans ta classe, révise-la 10 minutes, puis teste-toi avec un quiz.';
+ document.getElementById('smartSuggestion').textContent=msg+'\n\nConseil : travaille 20 à 25 minutes, puis fais une courte pause.';
+};
+const darkButton=document.getElementById('darkToggle');
+function setDark(on){document.body.classList.toggle('dark-mode',on);localStorage.setItem('edunova_dark_v1',on?'1':'0');darkButton.textContent=on?'Désactiver le mode sombre':'Activer le mode sombre'}
+setDark(localStorage.getItem('edunova_dark_v1')==='1');darkButton.onclick=()=>setDark(!document.body.classList.contains('dark-mode'));
+const oldKnown=known;known=function(){oldKnown();awardXP(3)};
+const oldAddCourse=addCourse;addCourse=function(){oldAddCourse();awardXP(10)};
+drawStats();
+
 /* Calculatrice scientifique EduNova */
 (()=>{
  const input=document.getElementById('calcDisplay');if(!input)return;
