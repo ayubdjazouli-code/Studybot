@@ -1,7 +1,56 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172554"><meta name="description" content="StudyBot aide les élèves à réviser avec des fiches, cartes mémoire et quiz."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon.svg"><title>StudyBot — Révise simplement</title>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172554"><meta name="description" content="StudyBot : cours, fiches, exercices, quiz et outils gratuits pour organiser tes révisions."><meta name="color-scheme" content="light"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon.svg"><title>StudyBot — Révise simplement</title>
 <style>
 :root{--bg:#f4f6fb;--ink:#172033;--muted:#667085;--blue:#3457d5;--line:#e4e8f0;--card:#fff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,sans-serif}header{background:linear-gradient(120deg,#172554,#3457d5);color:white;padding:25px 18px 32px}.wrap{max-width:950px;margin:auto;padding:0 15px}nav{display:flex;justify-content:space-between;align-items:center}.brand{font-size:1.35rem;font-weight:850}h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:28px 0 8px}header p{color:#e0e7ff;max-width:600px}main{padding:22px 0 45px}.tabs,.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tab,button{border:0;border-radius:11px;padding:11px 15px;font:inherit;font-weight:700;cursor:pointer}.tab{background:#e8ecf5;color:#344054}.tab.active,.primary{background:var(--blue);color:white}.secondary{background:#e9efff;color:#2444ad}.ghost{background:#f0f2f7;color:#344054}.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:15px}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:19px;margin-bottom:15px;box-shadow:0 5px 20px #15254b08}h2{font-size:1.18rem;margin:0 0 10px}p{color:var(--muted);margin:7px 0}label{display:block;font-weight:700;margin:12px 0 5px}input,textarea{width:100%;padding:12px;border:1px solid #d7ddea;border-radius:10px;font:inherit}textarea{min-height:150px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0}.stat{background:#f5f7fc;padding:12px;border-radius:12px}.stat strong{display:block;font-size:1.5rem;color:#213e9a}.stat span,.small{font-size:.82rem;color:var(--muted)}.notice{background:#fff8e8;border:1px solid #f4dfad;padding:12px;border-radius:12px;color:#78540a}.result,.flash{white-space:pre-wrap;background:#f5f7fc;border-radius:12px;padding:14px;margin-top:12px}.flash{min-height:140px;display:grid;place-items:center;text-align:center;font-size:1.1rem;font-weight:700}.item{padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}.answer{display:block;width:100%;text-align:left;background:#f5f7fb;color:var(--ink);margin:8px 0;border:1px solid var(--line)}details{background:#f7f8fc;border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin:9px 0}details summary{font-weight:700;cursor:pointer;color:#243b83}details p{padding-top:8px;margin-bottom:2px}#library h3{font-size:1rem;margin:18px 0 5px}footer{text-align:center;color:var(--muted);font-size:.82rem;padding:20px}.hidden{display:none!important}@media(max-width:700px){.grid{grid-template-columns:1fr}.card{padding:15px}}
+/* Finition visuelle et confort mobile */
+:root{color-scheme:light;--bg:#f3f6fc;--ink:#172033;--muted:#64748b;--blue:#3155c8;--line:#e2e8f0;--card:#fff}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{min-height:100vh;letter-spacing:.005em}
+header{padding:22px 18px 34px;background:radial-gradient(circle at 85% 15%,#5577e8 0,transparent 34%),linear-gradient(125deg,#111d43,#2949ad 72%,#3b5fd0)}
+.brand{display:flex;align-items:center;gap:8px;letter-spacing:-.03em}
+h1{letter-spacing:-.045em;font-weight:850}
+main.wrap{padding-top:18px}
+.tabs{position:sticky;top:0;z-index:5;padding:9px 0;background:rgba(243,246,252,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e5eaf3}
+.tab{white-space:nowrap;transition:background .15s ease,transform .15s ease}
+.tab:active,button:active{transform:scale(.98)}
+.tab.active{box-shadow:0 3px 10px #3155c82b}
+.card{border-radius:19px;box-shadow:0 7px 24px rgba(23,32,51,.045);padding:20px}
+.card h2{letter-spacing:-.02em}
+input,textarea,select{background:#fff;color:var(--ink);border:1px solid #d5ddeb;border-radius:12px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #3155c81c}
+button{transition:filter .15s,transform .15s}
+button:hover:not(:disabled){filter:brightness(.97)}
+button:focus-visible,.tab:focus-visible,summary:focus-visible{outline:3px solid #91a8ff;outline-offset:2px}
+button:disabled{cursor:not-allowed;opacity:.55}
+.stat{border:1px solid #e8edf6;border-radius:14px}
+.stat strong{letter-spacing:-.04em}
+.notice{border-radius:14px}
+.result,.flash{border:1px solid #e7ecf5;border-radius:15px}
+.answer{border-radius:12px;padding:13px 14px}
+.answer:hover:not(:disabled){border-color:#9aacec;background:#eef2ff}
+details{border-radius:13px}
+details[open]{background:#fff;border-color:#bdcafa}
+details summary{line-height:1.4}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.item p{flex-basis:100%}
+footer{padding:28px 12px}
+@media(max-width:700px){
+ .wrap{padding-left:12px;padding-right:12px}
+ header{padding:18px 12px 28px}
+ h1{margin-top:24px}
+ .tabs{margin-left:-12px;margin-right:-12px;padding:9px 12px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+ .tabs::-webkit-scrollbar{display:none}
+ .tab{flex:0 0 auto;font-size:.9rem;padding:10px 13px}
+ .card{padding:16px;border-radius:16px}
+ .stats{gap:6px}
+ .stat{padding:10px 8px;min-width:0}
+ .stat strong{font-size:1.25rem}
+ .stat span{font-size:.72rem}
+ .actions{gap:7px}
+ .actions button{flex:1 1 auto}
+ textarea{min-height:130px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
 </style></head><body>
 <header><div class="wrap"><nav><div class="brand">✦ StudyBot</div><button id="install" class="secondary hidden">Installer</button></nav><h1>Révise mieux.<br>Sans te compliquer la vie.</h1><p>Transforme tes cours en fiches, cartes mémoire et quiz. Gratuitement.</p></div></header>
 <main class="wrap"><div class="tabs"><button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="notes">Mes cours</button><button class="tab" data-tab="cards">Cartes mémoire</button><button class="tab" data-tab="quiz">Quiz</button><button class="tab" data-tab="library">Fiches & exercices</button><button class="tab" data-tab="plus">StudyBot Plus</button><button class="tab" data-tab="alllevels">Tous les niveaux</button><button class="tab" data-tab="tools">Outils</button></div>
@@ -58,7 +107,7 @@
 <div class="card"><h2>🧮 Calculer ma moyenne</h2><p>Entre tes notes sur 20. Tu peux ajouter un coefficient pour chaque note.</p><div class="grid"><div><label for="gradeInput">Note sur 20</label><input id="gradeInput" type="number" min="0" max="20" step="0.25" placeholder="Ex. 14"></div><div><label for="coefInput">Coefficient</label><input id="coefInput" type="number" min="0.1" max="20" step="0.1" value="1"></div></div><div class="actions"><button class="primary" id="addGrade">Ajouter la note</button><button class="ghost" id="resetGrades">Effacer les notes</button></div><div id="gradeList"></div><div class="result" id="averageResult">Ta moyenne apparaîtra ici.</div></div>
 <div class="card"><h2>🎯 Défi du jour</h2><p id="dailyChallenge">Choisis une matière, révise 10 minutes, puis écris de mémoire trois choses que tu as retenues.</p><button class="secondary" id="newChallenge">Nouveau défi</button></div>
 </section><section id="plus" class="panel"><div class="card"><h2>StudyBot Premium</h2><p>Plus d’outils pour mieux organiser tes révisions.</p><div style="background:#f5f7fc;border:1px solid var(--line);border-radius:15px;padding:18px;margin:15px 0"><div class="small">OFFRE ENVISAGÉE</div><div style="font-size:2rem;font-weight:850;color:#213e9a">3,99 € <span style="font-size:1rem;color:var(--muted);font-weight:500">/ mois</span></div><ul><li>Suivi détaillé de tes révisions</li><li>Outils de révision supplémentaires</li><li>Personnalisation de ton espace</li></ul><button class="primary" type="button" disabled style="opacity:.65;cursor:not-allowed">Abonnement bientôt disponible</button></div></div></section>
-<footer>StudyBot — gratuit • Tes cours restent enregistrés sur cet appareil.</footer></main>
+<footer><b>✦ StudyBot</b><br>Un espace simple pour apprendre à ton rythme.<br><span class="small">Tes cours, notes et tâches sont enregistrés uniquement sur cet appareil. Pense à exporter une sauvegarde si tu changes de téléphone.</span></footer></main>
 <script>
 
 const LEVEL_DATA = {
