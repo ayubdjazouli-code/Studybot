@@ -136,6 +136,23 @@ header{padding-top:30px;padding-bottom:42px}
 }
 @media(prefers-reduced-motion:reduce){.panel.active{animation:none}}
 
+
+/* Recherche et modules : lisibilité et accessibilité */
+#resourceSearch{margin:8px 0 12px}
+.lesson-card{padding:28px}
+.lesson-card h2{font-size:1.35rem;margin:6px 0 16px}
+.lesson-card h3{margin:24px 0 9px}
+.lesson-exercise{padding:16px 18px;margin:12px 0}
+.lesson-exercise summary{padding:3px}
+.lesson-exercise p{line-height:1.7}
+#levelContent>.card{margin-bottom:28px}
+#notes .card{margin-bottom:28px}
+#notes #courses .item{padding:17px 0}
+#notes #courses .item button{margin-top:8px}
+button,input,textarea,select{touch-action:manipulation}
+:focus-visible{outline:3px solid #86a4ff;outline-offset:3px}
+@media(max-width:700px){.lesson-card{padding:20px}.lesson-card h2{font-size:1.15rem}#levelContent>.card{margin-bottom:21px}}
+
 </style></head><body>
 <header><div class="wrap"><nav><div class="brand"><img src="icons/icon.svg" alt="" style="width:30px;height:30px;vertical-align:middle;border-radius:9px;margin-right:8px">EduNova</div><button id="install" class="secondary hidden">Installer</button></nav><h1>Révise mieux.<br>Sans te compliquer la vie.</h1><p>Transforme tes cours en fiches, cartes mémoire et quiz. Gratuitement.</p></div></header>
 <main class="wrap"><div class="tabs"><button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="notes">Mes cours</button><button class="tab" data-tab="assistant">🤖 Assistant IA</button><button class="tab" data-tab="calculator-panel">🧮 Calculatrice</button><button class="tab" data-tab="languages">Langues</button><button class="tab" data-tab="cards">Cartes mémoire</button><button class="tab" data-tab="quiz">Quiz</button><button class="tab" data-tab="library">Fiches & exercices</button><button class="tab" data-tab="plus">EduNova Plus</button><button class="tab" data-tab="alllevels">Tous les niveaux</button><button class="tab" data-tab="tools">Outils</button></div>
@@ -213,7 +230,7 @@ header{padding-top:30px;padding-bottom:42px}
 <label for="gradeSelect">Ton niveau</label><select id="gradeSelect"><option>6e</option><option>5e</option><option>4e</option><option>3e</option><option>2nde</option><option>1re</option><option>Terminale</option></select>
 <label for="subjectSelect">Matière</label><select id="subjectSelect"><option value="Toutes">Toutes les matières</option><option>Mathématiques</option><option>Français</option><option>Anglais</option><option>Histoire-géographie</option><option>Sciences</option></select>
 <div class="stats"><div class="stat"><strong id="lessonCount">0</strong><span>cours</span></div><div class="stat"><strong id="exerciseCount">0</strong><span>exercices</span></div><div class="stat"><strong id="quizCount">0</strong><span>questions de quiz</span></div></div>
-</div><div id="levelContent"></div><div class="card"><h2>🧠 Quiz du niveau</h2><p>Réponds aux questions puis regarde ton résultat.</p><div id="levelQuiz"></div><button class="primary" id="launchLevelQuiz">Lancer le quiz</button></div>
+</div><label for="resourceSearch">Rechercher un cours, une notion ou un exercice</label><input id="resourceSearch" type="search" placeholder="Ex. fractions, Révolution française, verbes…"><p class="small" id="resourceSearchStatus" aria-live="polite">Recherche dans les fiches du niveau sélectionné.</p><div id="levelContent"></div><div class="card"><h2>🧠 Quiz du niveau</h2><p>Réponds aux questions puis regarde ton résultat.</p><div id="levelQuiz"></div><button class="primary" id="launchLevelQuiz">Lancer le quiz</button></div>
 </section><section id="calculator-panel" class="panel"><div class="card calculator-card" id="calculator">
 <div class="calculator-heading"><div><span class="home-eyebrow">OUTIL DE MATHS</span><h2>🧮 Calculatrice scientifique</h2><p>Pour les calculs simples et les maths du collège au lycée.</p></div><button class="calc-angle" id="calcAngle" type="button">DEG</button></div>
 <div class="calc-screen"><div id="calcExpression" class="calc-expression">Prêt à calculer</div><input id="calcDisplay" class="calc-display" aria-label="Calcul à effectuer" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0"><div id="calcError" class="calc-error" aria-live="polite"></div></div>
@@ -538,14 +555,19 @@ for(const grade of Object.keys(MORE_LEVEL_QUIZZES)) EXTRA_LEVEL_QUIZZES[grade].p
 
 function renderLevelLibrary(){
  const grade=document.getElementById('gradeSelect').value,subject=document.getElementById('subjectSelect').value;
- const entries=LEVEL_DATA[grade].concat(EXTRA_LEVEL_DATA[grade]||[]).filter(x=>subject==='Toutes'||x[0]===subject);
+ const query=(document.getElementById('resourceSearch')?.value||'').trim().toLocaleLowerCase('fr');
+ const all=LEVEL_DATA[grade].concat(EXTRA_LEVEL_DATA[grade]||[]).filter(x=>subject==='Toutes'||x[0]===subject);
+ const entries=all.filter(x=>!query||[x[0],x[1],x[2],...x[3].flat()].join(' ').toLocaleLowerCase('fr').includes(query));
  document.getElementById('lessonCount').textContent=entries.length;
  document.getElementById('exerciseCount').textContent=entries.reduce((n,x)=>n+x[3].length,0);
  document.getElementById('quizCount').textContent=LEVEL_QUIZZES[grade].length+(EXTRA_LEVEL_QUIZZES[grade]||[]).length;
- document.getElementById('levelContent').innerHTML=entries.map((x,i)=>'<div class="card lesson-card"><div class="lesson-tag">FICHE DE COURS • '+safe(grade.toUpperCase())+'</div><h2>'+safe(x[0])+' — '+safe(x[1])+'</h2><h3>📘 À retenir</h3><p>'+safe(x[2])+'</p><div class="lesson-tip"><b>💡 Méthode :</b> Lis la fiche, cache-la et essaie de reformuler les idées importantes avec tes propres mots. Puis fais les exercices sans regarder la correction.</div><h3>✍️ Exercices corrigés ('+x[3].length+')</h3>'+x[3].map((e,j)=>'<details class="lesson-exercise"><summary>Exercice '+(j+1)+' : '+safe(e[0])+'</summary><p><b>Correction expliquée :</b> '+safe(e[1])+'</p></details>').join('')+'</div>').join('');
+ const status=document.getElementById('resourceSearchStatus');
+ if(status)status.textContent=query?entries.length+' fiche(s) trouvée(s) sur '+all.length+'.':'Recherche dans les '+all.length+' fiches de ce niveau.';
+ document.getElementById('levelContent').innerHTML=entries.map(x=>'<div class="card lesson-card"><div class="lesson-tag">FICHE DE COURS • '+safe(grade.toUpperCase())+'</div><h2>'+safe(x[0])+' — '+safe(x[1])+'</h2><h3>📘 À retenir</h3><p>'+safe(x[2])+'</p><div class="lesson-tip"><b>💡 Méthode :</b> Lis la fiche, cache-la et essaie de reformuler les idées importantes avec tes propres mots. Puis fais les exercices sans regarder la correction.</div><h3>✍️ Exercices corrigés ('+x[3].length+')</h3>'+x[3].map((e,j)=>'<details class="lesson-exercise"><summary>Exercice '+(j+1)+' : '+safe(e[0])+'</summary><p><b>Correction expliquée :</b> '+safe(e[1])+'</p></details>').join('')+'</div>').join('')||'<div class="card"><h2>Aucun résultat</h2><p>Essaie un autre mot ou change de matière.</p></div>';
 }
 document.getElementById('gradeSelect').addEventListener('change',renderLevelLibrary);
 document.getElementById('subjectSelect').addEventListener('change',renderLevelLibrary);
+document.getElementById('resourceSearch').addEventListener('input',renderLevelLibrary);
 let activeLevelQuestions=[],activeLevelIndex=0,activeLevelScore=0;
 function launchLevelQuiz(){
  const grade=document.getElementById('gradeSelect').value;activeLevelQuestions=LEVEL_QUIZZES[grade].concat(EXTRA_LEVEL_QUIZZES[grade]||[]);activeLevelIndex=0;activeLevelScore=0;showLevelQuestion();
@@ -590,7 +612,7 @@ document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>tab(x.dataset.tab));
 function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function makeCard(s,title){let words=s.match(/[A-Za-zÀ-ÿ'-]{6,}/g)||[];let answer=words.sort((a,b)=>b.length-a.length)[0];if(!answer)return null;let re=new RegExp(answer.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i');return{q:s.replace(re,'________'),a:answer,title}}
 function addCourse(){let t=document.getElementById('title').value.trim()||'Mon cours',src=document.getElementById('source').value.trim();if(src.length<60){alert('Ajoute un peu plus de texte (60 caractères minimum).');return}let lines=src.replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).filter(s=>s.length>30);if(!lines.length)lines=src.split(/\n+/).filter(s=>s.length>25);let cards=lines.map(s=>makeCard(s,t)).filter(Boolean).slice(0,20);let summary=lines.slice(0,5).map(s=>'• '+s).join('\n');data.courses.unshift({id:Date.now(),title:t,summary,created:new Date().toLocaleDateString('fr-FR')});data.cards.push(...cards);document.getElementById('summary').textContent='FICHE DE RÉVISION — '+t+'\n\n'+summary+'\n\n'+cards.length+' cartes créées.';document.getElementById('summary').classList.remove('hidden');document.getElementById('source').value='';document.getElementById('title').value='';persist()}
-function render(){document.getElementById('nc').textContent=data.courses.length;document.getElementById('ncard').textContent=data.cards.length;document.getElementById('nknown').textContent=data.known.length;document.getElementById('recent').innerHTML=data.courses.slice(0,4).map(c=>'<div class="item"><b>'+safe(c.title)+'</b><div class="small">'+c.created+'</div></div>').join('')||'Aucun cours pour le moment.';document.getElementById('courses').innerHTML=data.courses.map(c=>'<div class="item"><b>'+safe(c.title)+'</b><p>'+safe(c.summary.slice(0,160))+'</p><button class="ghost" onclick="removeCourse('+c.id+')">Supprimer</button></div>').join('')||'Aucun cours.';drawCard()}
+function render(){const count=id=>document.getElementById(id);if(count('nc'))count('nc').textContent=data.courses.length;if(count('ncard'))count('ncard').textContent=data.cards.length;if(count('nknown'))count('nknown').textContent=data.known.length;if(count('recent'))count('recent').innerHTML=data.courses.slice(0,4).map(c=>'<div class="item"><b>'+safe(c.title)+'</b><div class="small">'+safe(c.created)+'</div></div>').join('')||'Aucun cours pour le moment.';const list=count('courses');if(list)list.innerHTML=data.courses.map(c=>'<div class="item"><b>'+safe(c.title)+'</b><p>'+safe(c.summary.slice(0,160))+'</p><button class="ghost" onclick="removeCourse('+Number(c.id)+')">Supprimer</button></div>').join('')||'Aucun cours.';drawCard()}
 function removeCourse(id){if(!confirm('Supprimer ce cours et ses cartes ?'))return;let c=data.courses.find(x=>x.id===id);data.courses=data.courses.filter(x=>x.id!==id);data.cards=data.cards.filter(x=>x.title!==c.title);data.known=[];persist()}
 function drawCard(){let el=document.getElementById('flash');if(!data.cards.length){el.textContent='Ajoute d’abord un cours pour créer des cartes.';document.getElementById('progress').textContent='';return}pos=(pos+data.cards.length)%data.cards.length;let c=data.cards[pos];el.textContent=turned?'Réponse : '+c.a:c.q;document.getElementById('progress').textContent='Carte '+(pos+1)+' sur '+data.cards.length+' • '+c.title}
 function flip(){if(!data.cards.length)return;turned=!turned;drawCard()}function next(){if(!data.cards.length)return;pos=(pos+1)%data.cards.length;turned=false;drawCard()}function known(){if(!data.cards.length)return;let q=data.cards[pos].q;if(!data.known.includes(q))data.known.push(q);persist();next()}
@@ -674,46 +696,68 @@ const oldKnown=known;known=function(){oldKnown();awardXP(3)};
 const oldAddCourse=addCourse;addCourse=function(){oldAddCourse();awardXP(10)};
 drawStats();
 
-/* Calculatrice scientifique EduNova */
+/* Calculatrice scientifique EduNova — analyseur sécurisé sans eval */
 (()=>{
  const input=document.getElementById('calcDisplay');if(!input)return;
  const expression=document.getElementById('calcExpression'),error=document.getElementById('calcError'),angle=document.getElementById('calcAngle');
- let degrees=true,lastResult='';
+ let degrees=true,lastResult=null;
  function tokenize(source){
-  const clean=source.replace(/,/g,'.').replace(/π/g,'pi').replace(/×/g,'*').replace(/÷/g,'/');
-  const tokens=clean.match(/(?:\d+\.?\d*|\.\d+)|(?:[a-zA-Z]+)|[()+\-*/^%!]/g)||[];
-  if(tokens.join('')!==clean.replace(/\s+/g,''))throw Error('Caractère non reconnu.');
+  const clean=source.replace(/,/g,'.').replace(/[π]/g,'pi').replace(/[×]/g,'*').replace(/[÷]/g,'/').replace(/[−]/g,'-').replace(/\s+/g,'');
+  const re=/\d+(?:\.\d*)?|\.\d+|[a-zA-Z]+|[()+\-*/^%!]/gy,tokens=[];let pos=0,m;
+  while(pos<clean.length){re.lastIndex=pos;m=re.exec(clean);if(!m)throw Error('Caractère non reconnu : '+clean[pos]);tokens.push(m[0].toLowerCase());pos=re.lastIndex}
   return tokens;
  }
  function calculate(source){
-  const t=tokenize(source);let p=0;
-  const peek=()=>t[p],take=()=>t[p++];
-  const factorial=n=>{if(n<0||!Number.isInteger(n)||n>170)throw Error('Factorielle définie pour un entier de 0 à 170.');let v=1;for(let i=2;i<=n;i++)v*=i;return v};
+  const raw=tokenize(source);if(!raw.length)throw Error('Écris un calcul.');
+  const t=[];
+  const isEnd=v=>v===')'||v==='!'||v==='%';
+  const starts=v=>v!==undefined&&(v==='('||/^(?:\d|\.)/.test(v)||v==='pi'||v==='e'||/^[a-z]+$/.test(v));
+  for(let i=0;i<raw.length;i++){
+   const cur=raw[i],prev=t[t.length-1];
+   if(prev!==undefined&&!isEnd(prev)&&starts(cur)&&
+      (prev===')'||prev==='pi'||prev==='e'||prev==='!'||prev==='%'||/^\d/.test(prev)||prev[0]==='.')){
+      // Multiplication implicite : 2pi, 3(4+1), 2sqrt(9), (2+1)(3+1)
+      t.push('*');
+   }
+   t.push(cur);
+  }
+  let p=0;const peek=()=>t[p],take=()=>t[p++];
+  const factorial=n=>{if(n<0||!Number.isInteger(n)||n>170)throw Error('La factorielle demande un entier entre 0 et 170.');let v=1;for(let i=2;i<=n;i++)v*=i;return v};
+  const funcs={
+   sqrt:v=>{if(v<0)throw Error('Impossible de calculer la racine d’un nombre négatif.');return Math.sqrt(v)},
+   sin:v=>Math.sin(degrees?v*Math.PI/180:v),cos:v=>Math.cos(degrees?v*Math.PI/180:v),
+   tan:v=>{const a=degrees?v*Math.PI/180:v;if(Math.abs(Math.cos(a))<1e-12)throw Error('Tangente non définie pour cet angle.');return Math.tan(a)},
+   asin:v=>{if(v< -1||v>1)throw Error('asin accepte une valeur entre -1 et 1.');const a=Math.asin(v);return degrees?a*180/Math.PI:a},
+   acos:v=>{if(v< -1||v>1)throw Error('acos accepte une valeur entre -1 et 1.');const a=Math.acos(v);return degrees?a*180/Math.PI:a},
+   atan:v=>{const a=Math.atan(v);return degrees?a*180/Math.PI:a},
+   log:v=>{if(v<=0)throw Error('Le logarithme demande un nombre positif.');return Math.log10(v)},
+   ln:v=>{if(v<=0)throw Error('Le logarithme demande un nombre positif.');return Math.log(v)},
+   abs:Math.abs,floor:Math.floor,ceil:Math.ceil,round:Math.round
+  };
   function primary(){
    const x=take();if(x===undefined)throw Error('Calcul incomplet.');
-   if(x==='+'||x==='-'){const v=unary();return x==='-'?-v:v}
-   if(x==='('){const v=add();if(take()!==')')throw Error('Parenthèse manquante.');return v}
-   if(/^\d/.test(x)||x[0]==='.')return Number(x);
+   if(x==='('){const v=add();if(take()!==')')throw Error('Parenthèse fermante manquante.');return v}
    if(x==='pi')return Math.PI;if(x==='e')return Math.E;
-   const funcs={sqrt:v=>{if(v<0)throw Error('Racine carrée impossible pour un nombre négatif.');return Math.sqrt(v)},sin:v=>Math.sin(degrees?v*Math.PI/180:v),cos:v=>Math.cos(degrees?v*Math.PI/180:v),tan:v=>Math.tan(degrees?v*Math.PI/180:v),asin:v=>{const a=Math.asin(v);return degrees?a*180/Math.PI:a},acos:v=>{const a=Math.acos(v);return degrees?a*180/Math.PI:a},atan:v=>{const a=Math.atan(v);return degrees?a*180/Math.PI:a},log:v=>{if(v<=0)throw Error('Logarithme impossible pour zéro ou un nombre négatif.');return Math.log10(v)},ln:v=>{if(v<=0)throw Error('Logarithme impossible pour zéro ou un nombre négatif.');return Math.log(v)},abs:Math.abs,floor:Math.floor,ceil:Math.ceil,round:Math.round};
-   if(funcs[x]){if(take()!=='(')throw Error('Ajoute une parenthèse après '+x+'.');const v=add();if(take()!==')')throw Error('Parenthèse manquante.');return funcs[x](v)}
-   throw Error('Expression non reconnue.');
+   if(/^\d/.test(x)||x[0]==='.')return Number(x);
+   if(funcs[x]){if(take()!=='(')throw Error('Ajoute une parenthèse après '+x+'.');const v=add();if(take()!==')')throw Error('Parenthèse fermante manquante.');return funcs[x](v)}
+   throw Error('Expression non reconnue : '+x);
   }
   function postfix(){let v=primary();while(peek()==='%'||peek()==='!'){const op=take();v=op==='%'?v/100:factorial(v)}return v}
   function power(){let v=postfix();if(peek()==='^'){take();v=Math.pow(v,unary())}return v}
-  function unary(){if(peek()==='+'||peek()==='-'){const op=take();const v=unary();return op==='-'?-v:v}return power()}
-  function mul(){let v=unary();while(peek()==='*'||peek()==='/'){const op=take(),b=unary();if(op==='/'&&b===0)throw Error('Division par zéro impossible.');v=op==='*'?v*b:v/b}return v}
-  function add(){let v=mul();while(peek()==='+'||peek()==='-'){const op=take(),b=mul();v=op==='+'?v+b:v-b}return v}
-  if(!t.length)throw Error('Écris un calcul.');const result=add();if(p!==t.length)throw Error('Vérifie ton calcul.');if(!Number.isFinite(result))throw Error('Résultat non défini.');return result;
+  function unary(){if(peek()==='+'||peek()==='-'){const op=take(),v=unary();return op==='-'?-v:v}return power()}
+  function multiply(){let v=unary();while(peek()==='*'||peek()==='/'){const op=take(),b=unary();if(op==='/'&&b===0)throw Error('Division par zéro impossible.');v=op==='*'?v*b:v/b}return v}
+  function add(){let v=multiply();while(peek()==='+'||peek()==='-'){const op=take(),b=multiply();v=op==='+'?v+b:v-b}return v}
+  const result=add();if(p!==t.length)throw Error('Vérifie les opérateurs et les parenthèses.');if(!Number.isFinite(result))throw Error('Résultat non défini.');return result;
  }
- function showResult(){try{const result=calculate(input.value);lastResult=String(Number(result.toPrecision(12)));expression.textContent=input.value+' =';input.value=lastResult;error.textContent='';}catch(e){error.textContent=e.message;}}
- document.querySelectorAll('[data-calc]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.calc;const a=input.selectionStart??input.value.length,z=input.selectionEnd??a;input.value=input.value.slice(0,a)+v+input.value.slice(z);input.focus();const n=a+v.length;input.setSelectionRange(n,n);error.textContent='';}));
+ function format(n){if(Math.abs(n)<1e-12)return'0';return String(Number(n.toPrecision(12)))}
+ function showResult(){try{const original=input.value,result=calculate(original);lastResult=format(result);expression.textContent=original+' =';input.value=lastResult;error.textContent='';}catch(e){lastResult=null;error.textContent=e.message}}
+ document.querySelectorAll('[data-calc]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.calc,a=input.selectionStart??input.value.length,z=input.selectionEnd??a;input.value=input.value.slice(0,a)+v+input.value.slice(z);input.focus();const n=a+v.length;input.setSelectionRange(n,n);error.textContent='';lastResult=null}));
  document.getElementById('calcEquals').addEventListener('click',showResult);
- document.getElementById('calcClear').addEventListener('click',()=>{input.value='';expression.textContent='Prêt à calculer';error.textContent='';lastResult='';input.focus()});
- document.getElementById('calcBack').addEventListener('click',()=>{const a=input.selectionStart??input.value.length,z=input.selectionEnd??a;if(a===z&&a>0)input.value=input.value.slice(0,a-1)+input.value.slice(z);else input.value=input.value.slice(0,a)+input.value.slice(z);input.focus();});
- document.getElementById('calcCopy').addEventListener('click',()=>{if(lastResult&&navigator.clipboard?.writeText)navigator.clipboard.writeText(lastResult).then(()=>{error.textContent='Résultat copié.'}).catch(()=>{error.textContent='Copie indisponible.'});});
- angle.addEventListener('click',()=>{degrees=!degrees;angle.textContent=degrees?'DEG':'RAD';});
- input.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key==='='){e.preventDefault();showResult()}if(e.key==='Escape'){input.value='';error.textContent='';expression.textContent='Prêt à calculer'}});
+ document.getElementById('calcClear').addEventListener('click',()=>{input.value='';expression.textContent='Prêt à calculer';error.textContent='';lastResult=null;input.focus()});
+ document.getElementById('calcBack').addEventListener('click',()=>{const a=input.selectionStart??input.value.length,z=input.selectionEnd??a;if(a===z&&a>0)input.value=input.value.slice(0,a-1)+input.value.slice(z);else input.value=input.value.slice(0,a)+input.value.slice(z);input.focus();input.setSelectionRange(Math.max(0,a-1),Math.max(0,a-1));error.textContent='';lastResult=null});
+ document.getElementById('calcCopy').addEventListener('click',async()=>{if(lastResult===null){error.textContent='Calcule d’abord un résultat.';return}try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(lastResult);else{input.select();if(!document.execCommand('copy'))throw Error();}error.textContent='Résultat copié.'}catch(e){error.textContent='Copie impossible sur ce navigateur.'}});
+ angle.addEventListener('click',()=>{degrees=!degrees;angle.textContent=degrees?'DEG':'RAD';error.textContent=degrees?'Mode degrés activé.':'Mode radians activé.'});
+ input.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key==='='){e.preventDefault();showResult()}if(e.key==='Escape'){input.value='';error.textContent='';expression.textContent='Prêt à calculer';lastResult=null}});
 })();
 
 
