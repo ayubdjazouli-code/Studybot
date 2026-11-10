@@ -1,4 +1,4 @@
-# StudyBot
+# EduNova
 
 Application gratuite de révision en français : fiches simples, cartes mémoire et quiz générés à partir du texte de cours.
 
