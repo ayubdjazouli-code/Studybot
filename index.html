@@ -106,7 +106,27 @@ footer{padding:28px 12px}
 <div class="card"><h2>⏱️ Chronomètre de concentration</h2><p>Travaille 25 minutes, puis prends une pause de 5 minutes.</p><div class="stats"><div class="stat"><strong id="timerDisplay">25:00</strong><span id="timerMode">Concentration</span></div><div class="stat"><strong id="timerSessions">0</strong><span>sessions terminées</span></div><div class="stat"><strong>25 / 5</strong><span>minutes</span></div></div><div class="actions"><button class="primary" id="timerStart">Démarrer</button><button class="secondary" id="timerPause">Pause</button><button class="ghost" id="timerReset">Recommencer</button><button class="ghost" id="timerBreak">Pause 5 min</button></div><p class="small">Le chronomètre fonctionne tant que la page reste ouverte.</p></div>
 <div class="card"><h2>🧮 Calculer ma moyenne</h2><p>Entre tes notes sur 20. Tu peux ajouter un coefficient pour chaque note.</p><div class="grid"><div><label for="gradeInput">Note sur 20</label><input id="gradeInput" type="number" min="0" max="20" step="0.25" placeholder="Ex. 14"></div><div><label for="coefInput">Coefficient</label><input id="coefInput" type="number" min="0.1" max="20" step="0.1" value="1"></div></div><div class="actions"><button class="primary" id="addGrade">Ajouter la note</button><button class="ghost" id="resetGrades">Effacer les notes</button></div><div id="gradeList"></div><div class="result" id="averageResult">Ta moyenne apparaîtra ici.</div></div>
 <div class="card"><h2>🎯 Défi du jour</h2><p id="dailyChallenge">Choisis une matière, révise 10 minutes, puis écris de mémoire trois choses que tu as retenues.</p><button class="secondary" id="newChallenge">Nouveau défi</button></div>
-</section><section id="plus" class="panel"><div class="card"><h2>StudyBot Premium</h2><p>Plus d’outils pour mieux organiser tes révisions.</p><div style="background:#f5f7fc;border:1px solid var(--line);border-radius:15px;padding:18px;margin:15px 0"><div class="small">OFFRE ENVISAGÉE</div><div style="font-size:2rem;font-weight:850;color:#213e9a">3,99 € <span style="font-size:1rem;color:var(--muted);font-weight:500">/ mois</span></div><ul><li>Suivi détaillé de tes révisions</li><li>Outils de révision supplémentaires</li><li>Personnalisation de ton espace</li></ul><button class="primary" type="button" disabled style="opacity:.65;cursor:not-allowed">Abonnement bientôt disponible</button></div></div></section>
+</section><section id="plus" class="panel">
+<div class="card">
+<h2>⭐ StudyBot Premium</h2>
+<p>Choisis la formule qui te convient. Les cours et outils gratuits restent accessibles à tout le monde.</p>
+<div class="grid" style="align-items:stretch">
+<div style="background:#f5f7fc;border:1px solid var(--line);border-radius:16px;padding:18px;margin:8px 0">
+<div class="small">FORMULE MENSUELLE</div>
+<div style="font-size:2rem;font-weight:850;color:#213e9a">3,99 € <span style="font-size:1rem;color:var(--muted);font-weight:500">/ mois</span></div>
+<ul><li>Suivi détaillé des révisions</li><li>Outils de révision supplémentaires</li><li>Personnalisation de ton espace</li></ul>
+<button class="primary" type="button" disabled style="opacity:.65;cursor:not-allowed;width:100%">Bientôt disponible</button>
+</div>
+<div style="background:#f5f7fc;border:1px solid var(--line);border-radius:16px;padding:18px;margin:8px 0">
+<div class="small">FORMULE ANNUELLE</div>
+<div style="font-size:2rem;font-weight:850;color:#213e9a">39,99 € <span style="font-size:1rem;color:var(--muted);font-weight:500">/ an</span></div>
+<p class="small">Soit environ 3,33 € par mois.</p>
+<ul><li>Les mêmes avantages Premium</li><li>Un seul paiement pour l’année</li><li>Plus économique sur 12 mois</li></ul>
+<button class="primary" type="button" disabled style="opacity:.65;cursor:not-allowed;width:100%">Bientôt disponible</button>
+</div>
+</div>
+<p class="small">Les abonnements sont présentés à titre de projet. Aucun paiement ni renouvellement automatique n’est possible pour le moment. Les tarifs et conditions devront être confirmés avant l’ouverture des abonnements.</p>
+</div></section>
 <footer><b>✦ StudyBot</b><br>Un espace simple pour apprendre à ton rythme.<br><span class="small">Tes cours, notes et tâches sont enregistrés uniquement sur cet appareil. Pense à exporter une sauvegarde si tu changes de téléphone.</span></footer></main>
 <script>
 
