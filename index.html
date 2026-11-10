@@ -902,7 +902,7 @@ render();let promptEvent=null,install=document.getElementById('install');window.
 /* EduNova : progression, assistant guide, langues, scanner et examens */
 const EDU_XP_KEY='edunova_xp_v1',EDU_HISTORY_KEY='edunova_exam_history_v1';
 let eduXP=Number(localStorage.getItem(EDU_XP_KEY)||0),examHistory=JSON.parse(localStorage.getItem(EDU_HISTORY_KEY)||'[]');
-function awardXP(n){eduXP+=n;localStorage.setItem(EDU_XP_KEY,String(eduXP));drawXP()}
+function awardXP(n){eduXP+=n;localStorage.setItem(EDU_XP_KEY,String(eduXP));drawXP();if(window.EduNovaSyncXP)window.EduNovaSyncXP(eduXP)}
 function drawXP(){
  const level=Math.floor(eduXP/100)+1,within=eduXP%100;
  const label=document.getElementById('xpLabel'),lvl=document.getElementById('xpLevel'),bar=document.getElementById('xpBar'),next=document.getElementById('xpNext'),stat=document.getElementById('statXp'),ach=document.getElementById('achievements');
@@ -1084,6 +1084,8 @@ drawStats();
  if(!window.supabase||!status)return;
  const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
  const el=id=>document.getElementById(id);
+ let xpSyncTimer=null;
+ window.EduNovaSyncXP=value=>{if(!window.eduNovaCloudXP)return;clearTimeout(xpSyncTimer);xpSyncTimer=setTimeout(async()=>{const {data:{user}}=await client.auth.getUser();if(!user)return;const {error}=await client.from('profiles').update({xp:Math.max(0,Math.floor(Number(value)||0))}).eq('user_id',user.id);if(error)console.warn('Synchronisation XP impossible:',error.message)},500)};
  const say=t=>status.textContent=t;
  const fields=el('auth-fields'),profile=el('auth-profile'),logout=el('auth-signout');
  const email=()=>el('auth-email').value.trim(),password=()=>el('auth-password').value;
@@ -1094,8 +1096,9 @@ drawStats();
   if(!session){fields.hidden=false;profile.hidden=true;logout.hidden=true;say("Connecte-toi ou crée ton compte pour enregistrer ton profil.");return}
   fields.hidden=true;logout.hidden=false;
   say("Connecté avec "+(session.user.email||"ton compte")+".");
-  const {data,error:readError}=await client.from('profiles').select('age,institution_type,city,school_level,questionnaire_completed').eq('user_id',session.user.id).maybeSingle();
+  const {data,error:readError}=await client.from('profiles').select('age,institution_type,city,school_level,questionnaire_completed,xp').eq('user_id',session.user.id).maybeSingle();
   if(readError){say("Compte connecté, mais impossible de charger le profil : "+readError.message);profile.hidden=false;return}
+  if(data&&Number.isFinite(Number(data.xp))){window.eduNovaCloudXP=true;localStorage.setItem('edunova_xp_v1',String(Math.max(0,Number(data.xp))));if(typeof drawXP==='function')drawXP()}
   profile.hidden=!!(data&&data.questionnaire_completed);
   if(data){
    el('profile-age').value=data.age??'';
@@ -1126,7 +1129,7 @@ drawStats();
   const {data:{user}}=await client.auth.getUser();
   if(!user){say("Reconnecte-toi pour enregistrer ton profil.");return}
   say("Enregistrement du profil...");
-  const {error}=await client.from('profiles').upsert({user_id:user.id,age,institution_type:type,city:city||null,school_level:level,questionnaire_completed:true},{onConflict:'user_id'});
+  const {error}=await client.from('profiles').upsert({user_id:user.id,age,institution_type:type,city:city||null,school_level:level,questionnaire_completed:true,xp:Number(localStorage.getItem('edunova_xp_v1')||0)},{onConflict:'user_id'});
   if(error){fail(error);return}
   profile.hidden=true;say("Profil enregistré ! Bienvenue sur EduNova.");
  });
