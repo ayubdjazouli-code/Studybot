@@ -1131,6 +1131,7 @@ drawStats();
   say("Enregistrement du profil...");
   const {error}=await client.from('profiles').upsert({user_id:user.id,age,institution_type:type,city:city||null,school_level:level,questionnaire_completed:true,xp:Number(localStorage.getItem('edunova_xp_v1')||0)},{onConflict:'user_id'});
   if(error){fail(error);return}
+  window.eduNovaCloudXP=true;window.EduNovaSyncXP(Number(localStorage.getItem('edunova_xp_v1')||0));
   profile.hidden=true;say("Profil enregistré ! Bienvenue sur EduNova.");
  });
  logout.addEventListener('click',async()=>{
