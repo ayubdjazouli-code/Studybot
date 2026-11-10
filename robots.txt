@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ayubdjazouli-code.github.io/Studybot/sitemap.xml
