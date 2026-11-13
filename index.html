@@ -233,13 +233,20 @@ footer{padding:36px 16px}
  footer{padding:28px 12px}
 }
 
+/* Accessibilité : navigation clavier et repères de page */
+.skip-link{position:absolute;left:12px;top:-60px;z-index:1000;padding:12px 16px;background:#fff;color:#172554;border:2px solid #3155c8;border-radius:10px;font-weight:800}
+.skip-link:focus{top:12px}
+.tabs[role="group"]{align-items:center}
+.tab[aria-pressed="true"]{background:var(--blue);color:#fff}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style></head><body>
-<header><div class="wrap"><nav><div class="brand"><img src="icons/icon.svg" alt="" style="width:30px;height:30px;vertical-align:middle;border-radius:9px;margin-right:8px">EduNova</div><button id="install" class="secondary hidden">Installer</button></nav><h1>Révise mieux.<br>Sans te compliquer la vie.</h1><p>Transforme tes cours en fiches, cartes mémoire et quiz. Gratuitement.</p></div></header>
-<main class="wrap">
+<a class="skip-link" href="#main-content">Aller au contenu principal</a>
+<header><div class="wrap"><nav aria-label="Navigation principale"><div class="brand"><img src="icons/icon.svg" alt="" style="width:30px;height:30px;vertical-align:middle;border-radius:9px;margin-right:8px">EduNova</div><button id="install" class="secondary hidden">Installer</button></nav><h1>Révise mieux.<br>Sans te compliquer la vie.</h1><p>Transforme tes cours en fiches, cartes mémoire et quiz. Gratuitement.</p></div></header>
+<main class="wrap" id="main-content">
 <!-- EDUNOVA_SUPABASE_AUTH_V1 -->
 <section class="card" id="edunova-auth" style="margin-top:18px">
  <h2>👤 Mon compte EduNova</h2>
- <p id="auth-status">Connecte-toi ou crée ton compte pour enregistrer ton profil.</p>
+ <p id="auth-status" role="status" aria-live="polite">Connecte-toi ou crée ton compte pour enregistrer ton profil.</p>
  <div id="auth-fields">
   <label for="auth-email">Adresse e-mail</label><input id="auth-email" type="email" autocomplete="email" placeholder="ton@email.com">
   <label for="auth-password">Mot de passe</label><input id="auth-password" type="password" autocomplete="current-password" placeholder="Au moins 6 caractères">
@@ -256,7 +263,7 @@ footer{padding:36px 16px}
  <button class="ghost" id="auth-signout" type="button" hidden>Se déconnecter</button>
  <p class="small">N’indique pas ton adresse personnelle ni le nom précis de ton établissement. Ne partage jamais ton mot de passe. Les informations de profil sont enregistrées via le service de compte EduNova.</p>
 </section>
-<div class="tabs"><button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="notes">Mes cours</button><button class="tab" data-tab="assistant">🤖 Assistant pédagogique</button><button class="tab" data-tab="calculator-panel">🧮 Calculatrice</button><button class="tab" data-tab="languages">Langues</button><button class="tab" data-tab="cards">Cartes mémoire</button><button class="tab" data-tab="quiz">Quiz</button><button class="tab" data-tab="library">Fiches & exercices</button><button class="tab" data-tab="plus">EduNova Plus</button><button class="tab" data-tab="alllevels">Tous les niveaux</button><button class="tab" data-tab="tools">Outils</button><button class="tab" data-tab="support">Aide & contact</button></div>
+<div class="tabs" role="group" aria-label="Sections EduNova"><button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="notes">Mes cours</button><button class="tab" data-tab="assistant">🤖 Assistant pédagogique</button><button class="tab" data-tab="calculator-panel">🧮 Calculatrice</button><button class="tab" data-tab="languages">Langues</button><button class="tab" data-tab="cards">Cartes mémoire</button><button class="tab" data-tab="quiz">Quiz</button><button class="tab" data-tab="library">Fiches & exercices</button><button class="tab" data-tab="plus">EduNova Plus</button><button class="tab" data-tab="alllevels">Tous les niveaux</button><button class="tab" data-tab="tools">Outils</button><button class="tab" data-tab="support">Aide & contact</button></div>
 <section id="home" class="panel active">
 <div class="home-hero home-hero-simple"><div class="home-kicker">✦ TON ESPACE DE RÉVISION</div><h2>Que veux-tu faire ? 👋</h2><p>Choisis un raccourci et commence directement. Pas besoin de chercher dans les menus.</p><div class="home-hero-actions"><button class="home-white" onclick="openLevel('6e','Toutes')">Commencer à réviser →</button></div><div class="home-orbit">✦</div></div>
 <div class="card xp-card"><div class="xp-head"><div><span class="home-eyebrow">TON PARCOURS</span><h2>🏆 Mon niveau EduNova</h2><p id="xpLabel">0 XP • Débutant</p></div><div class="xp-badge" id="xpLevel">Niv. 1</div></div><div class="xp-track"><span id="xpBar"></span></div><p class="small" id="xpNext">Encore 100 XP pour le niveau suivant.</p><div class="xp-achievements" id="achievements"></div></div><div class="home-section-head"><div><span class="home-eyebrow">ACCÈS DIRECT</span><h2>Je veux…</h2></div></div>
@@ -842,7 +849,7 @@ drawTasks();drawGrades();drawTimer();
 
 const KEY='studybot_v1';let data=JSON.parse(localStorage.getItem(KEY)||'null')||{courses:[],cards:[],known:[]},pos=0,turned=false,qs=[],qi=0,score=0;
 function persist(){localStorage.setItem(KEY,JSON.stringify(data));render()}
-function tab(id){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id));if(id==='cards')drawCard()}
+function tab(id){document.querySelectorAll('.tab').forEach(x=>{const active=x.dataset.tab===id;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id));if(id==='cards')drawCard()}
 document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>tab(x.dataset.tab));
 function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function makeCard(s,title){let words=s.match(/[A-Za-zÀ-ÿ'-]{6,}/g)||[];let answer=words.sort((a,b)=>b.length-a.length)[0];if(!answer)return null;let re=new RegExp(answer.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i');return{q:s.replace(re,'________'),a:answer,title}}
