@@ -869,8 +869,9 @@ document.getElementById('launchLevelQuiz').addEventListener('click',launchLevelQ
 renderLevelLibrary();updateHomeCatalog();
 
 
+function readLocalJSON(key,fallback,validate){try{const raw=localStorage.getItem(key);if(raw===null)return fallback;const value=JSON.parse(raw);return validate(value)?value:fallback}catch(error){console.warn('Donnée locale illisible ('+key+').',error);return fallback}}
 const TASK_KEY='studybot_tasks_v1',GRADE_KEY='studybot_grades_v1';
-let tasks=JSON.parse(localStorage.getItem(TASK_KEY)||'[]'),grades=JSON.parse(localStorage.getItem(GRADE_KEY)||'[]');
+let tasks=readLocalJSON(TASK_KEY,[],Array.isArray).filter(t=>t&&typeof t==='object'&&typeof t.text==='string').map(t=>({text:t.text,done:!!t.done})),grades=readLocalJSON(GRADE_KEY,[],Array.isArray).filter(g=>g&&typeof g==='object'&&Number.isFinite(Number(g.note))&&Number.isFinite(Number(g.coef))&&Number(g.note)>=0&&Number(g.note)<=20&&Number(g.coef)>0).map(g=>({note:Number(g.note),coef:Number(g.coef)}));
 function saveTasks(){localStorage.setItem(TASK_KEY,JSON.stringify(tasks));drawTasks()}
 function drawTasks(){const el=document.getElementById('taskList');if(!el)return;el.innerHTML=tasks.length?tasks.map((t,i)=>'<div class="item"><label style="display:flex;gap:9px;align-items:center;margin:5px 0"><input type="checkbox" '+(t.done?'checked':'')+' data-task="'+i+'" style="width:auto">'+(t.done?'<span style="text-decoration:line-through;color:var(--muted)">'+safe(t.text)+'</span>':'<span>'+safe(t.text)+'</span>')+'</label><button class="ghost" data-delete-task="'+i+'">Supprimer</button></div>').join(''):'<p class="small">Ton planning est vide pour le moment.</p>';el.querySelectorAll('[data-task]').forEach(x=>x.onchange=()=>{tasks[Number(x.dataset.task)].done=x.checked;saveTasks()});el.querySelectorAll('[data-delete-task]').forEach(x=>x.onclick=()=>{tasks.splice(Number(x.dataset.deleteTask),1);saveTasks()})}
 document.getElementById('addTask').onclick=()=>{const el=document.getElementById('taskInput'),v=el.value.trim();if(!v)return;tasks.push({text:v,done:false});el.value='';saveTasks()};
@@ -891,7 +892,7 @@ const challenges=['Révise 10 mots d’anglais et teste-toi sans regarder.','Ré
 document.getElementById('newChallenge').onclick=()=>{let old=document.getElementById('dailyChallenge').textContent,choices=challenges.filter(x=>x!==old);document.getElementById('dailyChallenge').textContent=choices[Math.floor(Math.random()*choices.length)]};
 drawTasks();drawGrades();drawTimer();
 
-const KEY='studybot_v1';let data=JSON.parse(localStorage.getItem(KEY)||'null')||{courses:[],cards:[],known:[]},pos=0,turned=false,qs=[],qi=0,score=0;
+const KEY='studybot_v1',savedData=readLocalJSON(KEY,null,v=>v&&typeof v==='object'&&!Array.isArray(v));let data={courses:Array.isArray(savedData?.courses)?savedData.courses.filter(c=>c&&typeof c==='object'&&typeof c.title==='string'&&typeof c.summary==='string'&&typeof c.created==='string'&&Number.isFinite(Number(c.id))).map(c=>({...c,id:Number(c.id)})):[],cards:Array.isArray(savedData?.cards)?savedData.cards.filter(c=>c&&typeof c==='object'&&typeof c.q==='string'&&typeof c.a==='string'&&typeof c.title==='string'):[],known:Array.isArray(savedData?.known)?savedData.known.filter(x=>typeof x==='string'):[]},pos=0,turned=false,qs=[],qi=0,score=0;
 function persist(){localStorage.setItem(KEY,JSON.stringify(data));render()}
 function tab(id){document.querySelectorAll('.tab').forEach(x=>{const active=x.dataset.tab===id;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id));if(id==='cards')drawCard()}
 document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>tab(x.dataset.tab));
@@ -910,7 +911,7 @@ render();let promptEvent=null,install=document.getElementById('install');window.
 
 /* EduNova : progression, assistant guide, langues, scanner et examens */
 const EDU_XP_KEY='edunova_xp_v1',EDU_HISTORY_KEY='edunova_exam_history_v1';
-let eduXP=Number(localStorage.getItem(EDU_XP_KEY)||0),examHistory=JSON.parse(localStorage.getItem(EDU_HISTORY_KEY)||'[]');
+let eduXP=Number(localStorage.getItem(EDU_XP_KEY)||0);if(!Number.isFinite(eduXP)||eduXP<0)eduXP=0;let examHistory=readLocalJSON(EDU_HISTORY_KEY,[],Array.isArray).filter(x=>x&&typeof x==='object'&&Number.isFinite(Number(x.score))&&Number(x.score)>=0&&Number(x.score)<=100&&typeof x.date==='string').map(x=>({...x,score:Number(x.score)}));
 function awardXP(n){eduXP+=n;localStorage.setItem(EDU_XP_KEY,String(eduXP));drawXP();if(window.EduNovaSyncXP)window.EduNovaSyncXP(eduXP)}
 function drawXP(){
  const level=Math.floor(eduXP/100)+1,within=eduXP%100;
