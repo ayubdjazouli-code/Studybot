@@ -39,3 +39,19 @@ Sur iPhone : ouvrir le site dans Safari, toucher **Partager**, puis **Sur l’é
 ## Déploiement
 
 Le dépôt utilise GitHub Pages avec GitHub Actions. Les changements poussés sur la branche `main` déclenchent le workflow de déploiement défini dans `.github/workflows/pages.yml`.
+
+## EduNova AI (configuration requise)
+
+L'interface du nouvel assistant est incluse dans le site. Pour activer les réponses générées par IA sans frais fixes, il faut déployer la fonction Supabase et ajouter une clé API OpenRouter. Le routeur `openrouter/free` sélectionne un modèle gratuit disponible ; les modèles et quotas gratuits peuvent changer, être limités ou être temporairement indisponibles. Ce n'est pas une capacité illimitée ni une garantie de qualité identique à ChatGPT.
+
+1. Créer une clé sur [OpenRouter](https://openrouter.ai/keys) et vérifier les conditions/quota du compte.
+2. Installer Supabase CLI, puis se connecter au projet lié à EduNova.
+3. Ajouter le secret sans jamais le mettre dans le code du site :
+   `supabase secrets set OPENROUTER_API_KEY=ta_cle`
+4. Depuis la racine du dépôt, déployer :
+   `supabase functions deploy edunova-ai --project-ref aocrfbhgxdrznwqudggi`
+5. Vérifier les journaux de la fonction Supabase puis tester l'assistant sur le site.
+
+La clé OpenRouter reste côté serveur dans les secrets Supabase. La clé anon Supabase utilisée par le navigateur est publique par conception et ne doit jamais être remplacée par une clé service_role. Les conversations de l'assistant restent dans la session du navigateur et sont effacées avec « Nouvelle conversation ».
+
+Le fournisseur gratuit applique ses propres quotas et peut changer ses modèles. Les coûts d'hébergement Supabase, s'il y a dépassement des limites gratuites, ne sont pas garantis à 0 €.
