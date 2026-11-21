@@ -55,3 +55,19 @@ L'interface du nouvel assistant est incluse dans le site. Pour activer les répo
 La clé OpenRouter reste côté serveur dans les secrets Supabase. La clé anon Supabase utilisée par le navigateur est publique par conception et ne doit jamais être remplacée par une clé service_role. Les conversations de l'assistant restent dans la session du navigateur et sont effacées avec « Nouvelle conversation ».
 
 Le fournisseur gratuit applique ses propres quotas et peut changer ses modèles. Les coûts d'hébergement Supabase, s'il y a dépassement des limites gratuites, ne sont pas garantis à 0 €.
+
+
+## Abonnements Stripe (configuration à terminer)
+
+Le dépôt contient maintenant deux fonctions Supabase :
+- `stripe-checkout` : crée une session Checkout uniquement pour un utilisateur connecté et pour les deux tarifs autorisés.
+- `stripe-webhook` : vérifie la signature Stripe avant d'enregistrer l'état de l'abonnement.
+
+Une migration SQL crée la table `public.subscriptions` avec lecture limitée à l'utilisateur connecté. Avant tout paiement réel, l'administrateur du compte doit :
+1. Appliquer la migration SQL `supabase/migrations/20261121000000_create_subscriptions.sql` dans le SQL Editor Supabase.
+2. Ajouter `STRIPE_SECRET_KEY` dans les secrets Supabase.
+3. Déployer les fonctions `stripe-checkout` et `stripe-webhook`.
+4. Créer dans Stripe un webhook vers `https://aocrfbhgxdrznwqudggi.supabase.co/functions/v1/stripe-webhook` pour les événements `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` et `customer.subscription.deleted`, puis enregistrer sa signature comme secret `STRIPE_WEBHOOK_SECRET` dans Supabase.
+5. Tester en mode test avant d'envisager le mode réel.
+
+Ne jamais mettre de clé secrète Stripe dans le dépôt GitHub ou dans le navigateur. Les paiements ne sont pas considérés comme opérationnels tant que la migration, les secrets, le déploiement et les tests n'ont pas été effectués.
