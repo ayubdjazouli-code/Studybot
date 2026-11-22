@@ -257,6 +257,13 @@ footer{padding:36px 16px}
 .dark-mode .edai-chat{background:#101827}.dark-mode .edai-assistant,.dark-mode .edai-prompt{background:#202e45;color:#e8edf7;border-color:#34445f}
 @media(max-width:600px){.edai-meta{grid-template-columns:1fr}.edai-chat{padding:11px;max-height:60vh}.edai-message{max-width:98%}}
 
+
+.edai-message-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.edai-message-tools button{font-size:.76rem;padding:7px 10px;border-radius:9px;background:#eef2ff;color:#2949ad}
+.edai-user .edai-message-tools button{background:#ffffff20;color:#fff;border:1px solid #ffffff55}
+.edai-counter{font-variant-numeric:tabular-nums}
+.edai-chat:focus-visible{outline:3px solid #91a8ff;outline-offset:2px}
+.dark-mode .edai-message-tools button{background:#263b63;color:#dce6ff;border-color:#3c527c}
 </style></head><body>
 <a class="skip-link" href="#main-content">Aller au contenu principal</a>
 <header><div class="wrap"><nav aria-label="Navigation principale"><div class="brand"><img src="icons/icon.svg" alt="" style="width:30px;height:30px;vertical-align:middle;border-radius:9px;margin-right:8px">EduNova</div><button id="install" class="secondary hidden">Installer</button></nav><h1>Révise mieux.<br>Sans te compliquer la vie.</h1><p>Transforme tes cours en fiches, cartes mémoire et quiz. Gratuitement.</p></div></header>
@@ -317,8 +324,8 @@ footer{padding:36px 16px}
   <h2>🤖 EduNova AI</h2>
   <p>Pose tes questions, demande des explications détaillées, colle un exercice ou prépare un contrôle. L'assistant s'adapte à ton niveau.</p>
   <div class="edai-meta"><label for="assistantLevel">Ta classe</label><select id="assistantLevel"><option>6e</option><option>5e</option><option>4e</option><option>3e</option><option>2nde</option><option>1re</option><option>Terminale</option><option>Autre</option></select><label for="assistantSubject">Matière (facultatif)</label><select id="assistantSubject"><option value="Toutes matières">Toutes matières</option><option>Mathématiques</option><option>Français</option><option>Anglais</option><option>Histoire-géographie</option><option>Physique-chimie</option><option>SVT</option><option>Technologie</option><option>NSI / Informatique</option><option>Économie</option><option>Autre</option></select></div>
-  <div id="edai-chat" class="edai-chat" aria-live="polite"><div class="edai-welcome"><b>Bonjour ! Je suis EduNova AI.</b><p>Je peux t'expliquer un cours, corriger un exercice, t'interroger ou t'aider à organiser tes révisions. Que veux-tu travailler aujourd'hui ?</p><div class="edai-prompts"><button type="button" class="edai-prompt">Explique-moi les fractions simplement</button><button type="button" class="edai-prompt">Aide-moi à préparer un contrôle</button><button type="button" class="edai-prompt">Fais-moi un quiz pour réviser</button></div></div></div>
-  <form id="edai-form" class="edai-form"><label class="sr-only" for="assistantQuestion">Ton message</label><textarea id="assistantQuestion" maxlength="6000" rows="3" placeholder="Écris ta question ici… (Maj + Entrée pour aller à la ligne)" required></textarea><div class="edai-form-bottom"><span id="edai-status" class="small">Assistant IA · modèle gratuit · selon disponibilité</span><button class="primary" id="askAssistant" type="submit">Envoyer ↗</button></div></form>
+  <div id="edai-chat" class="edai-chat" role="log" aria-live="polite" aria-relevant="additions text"><div class="edai-welcome"><b>Bonjour ! Je suis EduNova AI.</b><p>Je peux t'expliquer un cours, corriger un exercice, t'interroger ou t'aider à organiser tes révisions. Que veux-tu travailler aujourd'hui ?</p><div class="edai-prompts"><button type="button" class="edai-prompt">Explique-moi les fractions simplement</button><button type="button" class="edai-prompt">Aide-moi à préparer un contrôle</button><button type="button" class="edai-prompt">Fais-moi un quiz pour réviser</button></div></div></div>
+  <form id="edai-form" class="edai-form"><label class="sr-only" for="assistantQuestion">Ton message</label><textarea id="assistantQuestion" maxlength="6000" rows="3" placeholder="Écris ta question ici… (Maj + Entrée pour aller à la ligne)" required></textarea><div class="edai-form-bottom"><span id="edai-status" class="small" role="status" aria-live="polite">Assistant IA · modèle gratuit · selon disponibilité</span><span id="edai-counter" class="small" aria-live="off">0 / 6000</span><button class="primary" id="askAssistant" type="submit">Envoyer ↗</button></div></form>
   <div class="edai-tools"><button type="button" class="ghost" id="edai-clear">Nouvelle conversation</button><span class="small">Ne partage pas de données personnelles ou de mots de passe.</span></div>
   <p class="small">Les réponses peuvent contenir des erreurs. Vérifie les informations importantes avec ton cours et ton professeur. Les modèles gratuits peuvent être temporairement indisponibles.</p>
  </div>
