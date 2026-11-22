@@ -1,9 +1,10 @@
-const CACHE_NAME = 'edunova-v23';
+const CACHE_NAME = 'edunova-v24';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icons/icon.svg',
+  './edunova-ai.js',
   './revisions-mathematiques.html',
   './revisions-francais.html',
   './revisions-histoire-geographie.html',
