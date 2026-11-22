@@ -55,6 +55,7 @@
    if(typeof awardXP==='function')awardXP(2);
   }catch(err){
    pending.classList.add('edai-error');pending.textContent=(err.name==='TimeoutError'?'La demande a pris trop de temps. Réessaie.':err.message||'Impossible de joindre EduNova AI.')+'\n\nSi le service vient d’être installé, vérifie que la fonction Supabase est déployée et que la clé OpenRouter est configurée.';
+   const retry=document.createElement('button');retry.type='button';retry.className='ghost';retry.textContent='Réessayer';retry.addEventListener('click',()=>{input.value=question;updateCounter();form.requestSubmit()});pending.appendChild(retry);
    history.pop();status.textContent='Échec de la demande.';
   }finally{setBusy(false);input.focus();chat.scrollTop=chat.scrollHeight}
  });
