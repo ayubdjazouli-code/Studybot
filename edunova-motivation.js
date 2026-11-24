@@ -38,6 +38,7 @@
   if (state.date !== today()) {
     state.date = today();
     state.done = [];
+    state.opened = [];
   }
   state.done = state.done.filter(n => Number.isInteger(n) && n >= 0 && n < tasks.length);
   if (!Array.isArray(state.opened)) state.opened = [];
