@@ -1097,7 +1097,7 @@ drawStats();
    if(value.length>3*1024*1024)throw new Error('Sauvegarde invalide : une donnée est trop volumineuse.');
    if(key==='edunova_xp_v1'){
     const xp=Number(value);
-    if(!/^\\d+$/.test(value)||!Number.isSafeInteger(xp))throw new Error('Sauvegarde invalide : progression incorrecte.');
+    if(!/^\d+$/.test(value)||!Number.isSafeInteger(xp))throw new Error('Sauvegarde invalide : progression incorrecte.');
    }else if(key==='edunova_dark_v1'){
     if(!['0','1'].includes(value))throw new Error('Sauvegarde invalide : préférence d’affichage incorrecte.');
    }else{
