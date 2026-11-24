@@ -16,9 +16,15 @@
   const read = () => {
     try {
       const value = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (value && value.date === today() && Number.isInteger(value.sessions) && value.sessions >= 0 && value.sessions < 100) return value;
+      if (value && typeof value === 'object') {
+        const history = Array.isArray(value.history) ? value.history.filter(x => x && /^\\d{4}-\\d{2}-\\d{2}$/.test(x.date) && Number.isFinite(x.minutes) && x.minutes > 0).slice(-30) : [];
+        if (value.date === today() && Number.isInteger(value.sessions) && value.sessions >= 0 && value.sessions < 100) {
+          return { ...value, history, duration: [15,25,45].includes(value.duration) ? value.duration : 25, remaining: Number.isFinite(value.remaining) ? Math.max(0,Math.min(value.duration*60,value.remaining)) : value.duration*60, running: Boolean(value.running), endAt: Number.isFinite(value.endAt) ? value.endAt : 0 };
+        }
+        return { date: today(), sessions: 0, minutes: 0, duration: 25, remaining: 25 * 60, endAt: 0, running: false, history };
+      }
     } catch (_) {}
-    return { date: today(), sessions: 0, minutes: 0, duration: 25, remaining: 25 * 60, endAt: 0, running: false };
+    return { date: today(), sessions: 0, minutes: 0, duration: 25, remaining: 25 * 60, endAt: 0, running: false, history: [] };
   };
   let state = read();
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} };
@@ -81,6 +87,29 @@
   const mission = home.querySelector('.edm-card');
   if (mission) mission.insertAdjacentElement('afterend', card);
   else hero.insertAdjacentElement('afterend', card);
+  const weekCard = document.createElement('section');
+  weekCard.className = 'eds-week';
+  weekCard.setAttribute('aria-label','Bilan de révision sur sept jours');
+  weekCard.innerHTML = '<div class="eds-week-top"><div><span class="eds-week-kicker">TA RÉGULARITÉ</span><h3>Cette semaine, tu avances.</h3><p>Chaque séance compte. Construis ton rythme, un jour après l’autre.</p></div><div class="eds-week-total"><b id="eds-week-count">0/5</b><span>séances cette semaine</span></div></div><div class="eds-week-bars" id="eds-week-bars"></div><div class="eds-week-foot" id="eds-week-foot">Objectif : 5 séances par semaine. À ton rythme !</div>';
+  card.insertAdjacentElement('afterend', weekCard);
+  style.textContent += `
+    .eds-week{margin:0 0 20px;padding:19px 20px;background:var(--card,#fff);border:1px solid var(--line,#e4e9f2);border-radius:18px;box-shadow:0 7px 24px rgba(23,32,51,.04)}
+    .eds-week-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+    .eds-week-kicker{font-size:.68rem;letter-spacing:.13em;font-weight:900;color:#6679ba}
+    .eds-week h3{font-size:1.05rem;margin:4px 0;color:var(--text,#172033)}
+    .eds-week p{font-size:.82rem;margin:0;color:var(--muted,#64748b)}
+    .eds-week-total{padding:8px 12px;background:#eef2ff;border-radius:12px;text-align:center;white-space:nowrap;color:#2846a5}
+    .eds-week-total b{display:block;font-size:1.3rem}
+    .eds-week-total span{font-size:.66rem}
+    .eds-week-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:17px;align-items:end}
+    .eds-day{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+    .eds-day-track{height:58px;width:100%;max-width:35px;background:var(--soft,#f0f3f8);border-radius:9px;display:flex;align-items:flex-end;overflow:hidden}
+    .eds-day-track span{display:block;width:100%;min-height:0;background:linear-gradient(180deg,#6385f1,#3155b8);border-radius:8px;transition:height .25s}
+    .eds-day small{font-size:.68rem;color:var(--muted,#64748b)}
+    .eds-day strong{font-size:.67rem;color:var(--text,#334155)}
+    .eds-week-foot{font-size:.76rem;color:var(--muted,#64748b);margin-top:12px}
+    @media(max-width:480px){.eds-week{padding:15px}.eds-week-bars{gap:5px}}
+  `;
 
   const $ = id => document.getElementById(id);
   const format = seconds => String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
@@ -97,6 +126,17 @@
     $('eds-sessions').textContent = state.sessions;
     $('eds-minutes').textContent = state.minutes;
     $('eds-goal').textContent = Math.min(state.sessions,2)+'/2';
+    const days = [];
+    for(let offset=6; offset>=0; offset--){
+      const d = new Date(); d.setDate(d.getDate()-offset);
+      const key = [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+      days.push({key,label:['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'][d.getDay()],minutes:state.history.filter(x=>x.date===key).reduce((sum,x)=>sum+x.minutes,0)});
+    }
+    const weeklyTotal = days.reduce((sum,x)=>sum+x.minutes,0);
+    const sessionsThisWeek = state.history.filter(x=>days.some(d=>d.key===x.date)).length;
+    $('eds-week-count').textContent = Math.min(sessionsThisWeek,5)+'/5';
+    $('eds-week-bars').innerHTML = days.map(day => '<div class="eds-day"><div class="eds-day-track" title="'+day.minutes+' minute(s)"><span style="height:'+Math.min(100,day.minutes/Math.max(25,...days.map(x=>x.minutes))*100)+'%"></span></div><strong>'+day.minutes+'m</strong><small>'+day.label+'</small></div>').join('');
+    $('eds-week-foot').textContent = sessionsThisWeek>=5 ? '🌟 Objectif hebdomadaire atteint ! Bravo pour ta régularité.' : weeklyTotal>0 ? weeklyTotal+' minutes de concentration cette semaine. Encore '+(5-sessionsThisWeek)+' séance(s) pour atteindre ton objectif.' : 'Objectif : 5 séances par semaine. À ton rythme !';
     $('eds-fill').style.width = Math.min(100,((total-remaining)/total)*100)+'%';
     $('eds-progress').setAttribute('aria-valuenow',String(Math.round((total-remaining)/total*100)));
     $('eds-status').textContent = state.running ? 'EN COURS' : remaining === 0 ? 'TERMINÉ 🎉' : state.remaining !== total ? 'EN PAUSE' : 'PRÊT À DÉMARRER';
@@ -115,6 +155,8 @@
     state.remaining = 0;
     state.sessions += 1;
     state.minutes += state.duration;
+    state.history.push({ date: today(), minutes: state.duration });
+    state.history = state.history.slice(-30);
     save();
     if(typeof window.awardXP === 'function') window.awardXP(15);
     $('eds-hint').textContent = '🏆 Bravo ! Séance terminée : +15 XP. Fais une petite pause avant de repartir.';
