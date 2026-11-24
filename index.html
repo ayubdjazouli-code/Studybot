@@ -1087,6 +1087,42 @@ drawStats();
 /* Sauvegarde / restauration des données personnelles EduNova */
 (()=>{
  const keys=['studybot_v1','studybot_tasks_v1','studybot_grades_v1','edunova_xp_v1','edunova_exam_history_v1','edunova_dark_v1'];
+ const validateBackup=backup=>{
+  if(!backup||backup.app!=='EduNova'||backup.format!==1||!backup.data||typeof backup.data!=='object'||Array.isArray(backup.data))throw new Error('Ce fichier ne semble pas être une sauvegarde EduNova valide.');
+  const validated={};
+  for(const key of keys){
+   if(!Object.prototype.hasOwnProperty.call(backup.data,key))continue;
+   const value=backup.data[key];
+   if(typeof value!=='string')throw new Error('Sauvegarde invalide : données incorrectes.');
+   if(value.length>3*1024*1024)throw new Error('Sauvegarde invalide : une donnée est trop volumineuse.');
+   if(key==='edunova_xp_v1'){
+    const xp=Number(value);
+    if(!/^\\d+$/.test(value)||!Number.isSafeInteger(xp))throw new Error('Sauvegarde invalide : progression incorrecte.');
+   }else if(key==='edunova_dark_v1'){
+    if(!['0','1'].includes(value))throw new Error('Sauvegarde invalide : préférence d’affichage incorrecte.');
+   }else{
+    let parsed;
+    try{parsed=JSON.parse(value)}catch{throw new Error('Sauvegarde invalide : certaines données sont illisibles.')}
+    if(key==='studybot_v1'){
+     const validShape=parsed&&typeof parsed==='object'&&!Array.isArray(parsed)&&Array.isArray(parsed.courses)&&Array.isArray(parsed.cards)&&Array.isArray(parsed.known);
+     const validCourses=validShape&&parsed.courses.every(c=>c&&typeof c==='object'&&typeof c.title==='string'&&typeof c.summary==='string');
+     const validCards=validShape&&parsed.cards.every(c=>c&&typeof c==='object'&&typeof c.q==='string'&&typeof c.a==='string'&&typeof c.title==='string');
+     const validKnown=validShape&&parsed.known.every(x=>typeof x==='string');
+     if(!validShape||!validCourses||!validCards||!validKnown)throw new Error('Sauvegarde invalide : les fiches ou cartes sont mal formées.');
+    }else if(!Array.isArray(parsed)){
+     throw new Error('Sauvegarde invalide : une liste de données est incorrecte.');
+    }else if(key==='studybot_tasks_v1'&&!parsed.every(t=>t&&typeof t.text==='string'&&typeof t.done==='boolean')){
+     throw new Error('Sauvegarde invalide : le planning est mal formé.');
+    }else if(key==='studybot_grades_v1'&&!parsed.every(g=>g&&Number.isFinite(Number(g.note))&&Number(g.note)>=0&&Number(g.note)<=20&&Number.isFinite(Number(g.coef))&&Number(g.coef)>0)){
+     throw new Error('Sauvegarde invalide : les notes sont mal formées.');
+    }else if(key==='edunova_exam_history_v1'&&!parsed.every(x=>x&&Number.isFinite(Number(x.score))&&Number(x.score)>=0&&Number(x.score)<=100&&typeof x.date==='string')){
+     throw new Error('Sauvegarde invalide : l’historique des examens est mal formé.');
+    }
+   }
+   validated[key]=value;
+  }
+  return validated;
+ };
  const download=document.getElementById('exportBackup'),pick=document.getElementById('importBackupBtn'),file=document.getElementById('importBackupFile'),status=document.getElementById('backupStatus');
  if(!download||!pick||!file||!status)return;
  download.addEventListener('click',()=>{
@@ -1101,13 +1137,14 @@ drawStats();
  pick.addEventListener('click',()=>file.click());
  file.addEventListener('change',()=>{
   const f=file.files&&file.files[0];if(!f)return;
+  if(f.size>3*1024*1024){status.textContent='Fichier trop volumineux. La taille maximale est de 3 Mo.';file.value='';return}
   const reader=new FileReader();
   reader.onload=()=>{
    try{
     const backup=JSON.parse(String(reader.result));
-    if(backup.app!=='EduNova'||backup.format!==1||!backup.data||typeof backup.data!=='object')throw new Error('Ce fichier ne semble pas être une sauvegarde EduNova valide.');
+    const validated=validateBackup(backup);
     if(!confirm('Restaurer cette sauvegarde ? Les données actuelles de cette application seront remplacées.')){file.value='';return}
-    keys.forEach(k=>{if(Object.prototype.hasOwnProperty.call(backup.data,k)){const value=backup.data[k];if(typeof value!=='string')throw new Error('Sauvegarde invalide : données incorrectes.');localStorage.setItem(k,value)}else localStorage.removeItem(k)});
+    keys.forEach(k=>{if(Object.prototype.hasOwnProperty.call(validated,k))localStorage.setItem(k,validated[k]);else localStorage.removeItem(k)});
     status.textContent='Sauvegarde restaurée. L’application va se recharger.';
     setTimeout(()=>location.reload(),500);
    }catch(e){status.textContent=e.message||'Impossible de lire cette sauvegarde.'}
