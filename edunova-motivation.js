@@ -34,12 +34,14 @@
   ];
   let state;
   try { state = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) {}
-  if (!state || typeof state !== 'object' || !Array.isArray(state.done)) state = { date:today(), done:[], streak:0, lastStreak:'' };
+  if (!state || typeof state !== 'object' || !Array.isArray(state.done)) state = { date:today(), done:[], opened:[], streak:0, lastStreak:'' };
   if (state.date !== today()) {
     state.date = today();
     state.done = [];
   }
   state.done = state.done.filter(n => Number.isInteger(n) && n >= 0 && n < tasks.length);
+  if (!Array.isArray(state.opened)) state.opened = [];
+  state.opened = state.opened.filter(n => Number.isInteger(n) && n >= 0 && n < tasks.length);
   state.streak = Number.isFinite(state.streak) ? state.streak : 0;
   state.lastStreak = typeof state.lastStreak === 'string' ? state.lastStreak : '';
 
@@ -96,7 +98,7 @@
     document.getElementById('edm-progress-fill').style.width = (count/3*100) + '%';
     document.getElementById('edm-list').innerHTML = tasks.map((task,index) => {
       const done = state.done.includes(index);
-      return '<article class="edm-task '+(done?'done':'')+'"><span class="edm-icon">'+task.icon+'</span><b>'+escapeHTML(task.title)+'</b><p>'+escapeHTML(task.desc)+'</p><button type="button" data-edm-action="'+index+'">'+(done?'✓ Mission terminée':task.button+' · +10 XP')+'</button></article>';
+      return '<article class="edm-task '+(done?'done':'')+'"><span class="edm-icon">'+task.icon+'</span><b>'+escapeHTML(task.title)+'</b><p>'+escapeHTML(task.desc)+'</p><button type="button" data-edm-action="'+index+'">'+(done?'✓ Mission terminée':state.opened.includes(index)?'Valider la mission · +10 XP':'Ouvrir la mission →')+'</button></article>';
     }).join('');
     if (count === 3) document.getElementById('edm-note').textContent = '🏆 Bravo ! Tu as terminé tes 3 missions du jour. Reviens demain pour un nouveau défi.';
   };
@@ -105,6 +107,14 @@
     if (!button) return;
     const index = Number(button.dataset.edmAction);
     if (!Number.isInteger(index) || !tasks[index]) return;
+    if (!state.done.includes(index) && !state.opened.includes(index)) {
+      state.opened.push(index);
+      save();
+      render();
+      document.getElementById('edm-note').textContent = 'Mission ouverte ! Réalise maintenant l’activité, puis reviens ici pour la valider et gagner tes XP.';
+      tasks[index].action();
+      return;
+    }
     if (!state.done.includes(index)) {
       state.done.push(index);
       state.done.sort();
@@ -119,7 +129,9 @@
         ? '🎉 Tes trois missions sont terminées. Tu as gagné 30 XP aujourd’hui !'
         : 'Bien joué ! Une mission de plus accomplie. Continue à ton rythme.';
     }
-    tasks[index].action();
+  });
+  document.addEventListener('click', event => {
+    if (event.target.closest('.tab[data-tab="home"]')) render();
   });
   save();
   render();
