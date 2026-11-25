@@ -276,6 +276,21 @@ footer{padding:36px 16px}
 .edai-counter{font-variant-numeric:tabular-nums}
 .edai-chat:focus-visible{outline:3px solid #91a8ff;outline-offset:2px}
 .dark-mode .edai-message-tools button{background:#263b63;color:#dce6ff;border-color:#3c527c}
+
+/* Accueil compte et conversion Premium+ */
+.auth-status{padding:11px 13px;border-radius:12px;background:#f3f6fc;border:1px solid var(--line);font-weight:650}
+.auth-success{display:flex;align-items:center;gap:11px;margin:12px 0;padding:13px 15px;border-radius:14px;background:#ecfdf3;border:1px solid #a7f3c5;color:#166534;animation:authPop .25s ease-out}
+.auth-success[hidden]{display:none}
+.auth-success>span{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:50%;background:#16a34a;color:white;font-weight:900}
+.auth-success small{display:block;color:#28734b;margin-top:2px}
+@keyframes authPop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.plus-plan-featured{position:relative;transform:translateY(-3px);background:linear-gradient(180deg,#f8faff,#fff 34%)}
+.plus-cta-premium{opacity:1;cursor:pointer;background:linear-gradient(110deg,#2446b8,#5274e8);box-shadow:0 7px 18px #3155c832;padding:14px 12px;font-size:.93rem}
+.plus-cta-premium:hover{filter:brightness(1.06);box-shadow:0 9px 22px #3155c844}
+.plus-plan-featured .plus-plan-label{color:#2949ad}
+.plus-plan-featured .plus-price{font-size:2rem}
+.home-hero-actions .home-outline{cursor:pointer}
+@media(max-width:700px){.plus-plan-featured{transform:none}.plus-cta-premium{font-size:.9rem}.auth-success{align-items:flex-start}}
 </style></head><body>
 <a class="skip-link" href="#main-content">Aller au contenu principal</a>
 <header><div class="wrap"><nav aria-label="Navigation principale"><div class="brand"><img src="icons/icon.svg" alt="" style="width:30px;height:30px;vertical-align:middle;border-radius:9px;margin-right:8px">EduNova</div><button id="install" class="secondary hidden">Installer</button></nav><h1>Révise mieux.<br>Sans te compliquer la vie.</h1><p>Transforme tes cours en fiches, cartes mémoire et quiz. Gratuitement.</p></div></header>
@@ -283,7 +298,7 @@ footer{padding:36px 16px}
 <!-- EDUNOVA_SUPABASE_AUTH_V1 -->
 <section class="card" id="edunova-auth" style="margin-top:18px">
  <h2>👤 Mon compte EduNova</h2>
- <p id="auth-status" role="status" aria-live="polite">Connecte-toi ou crée ton compte pour enregistrer ton profil.</p>
+ <p id="auth-status" class="auth-status" role="status" aria-live="polite">Connecte-toi ou crée ton compte pour enregistrer ton profil.</p><div id="auth-success" class="auth-success" role="status" aria-live="polite" hidden><span aria-hidden="true">✓</span><div><b>Connexion réussie !</b><small>Bienvenue sur EduNova.</small></div></div>
  <div id="auth-fields">
   <label for="auth-email">Adresse e-mail</label><input id="auth-email" type="email" autocomplete="email" placeholder="ton@email.com">
   <label for="auth-password">Mot de passe</label><input id="auth-password" type="password" autocomplete="current-password" placeholder="Au moins 6 caractères">
@@ -302,7 +317,7 @@ footer{padding:36px 16px}
 </section>
 <div class="tabs" role="group" aria-label="Sections EduNova"><button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="notes">Mes cours</button><button class="tab" data-tab="assistant">🤖 Assistant pédagogique</button><button class="tab" data-tab="calculator-panel">🧮 Calculatrice</button><button class="tab" data-tab="languages">Langues</button><button class="tab" data-tab="cards">Cartes mémoire</button><button class="tab" data-tab="quiz">Quiz</button><button class="tab" data-tab="library">Fiches & exercices</button><button class="tab" data-tab="plus">EduNova Plus</button><button class="tab" data-tab="alllevels">Tous les niveaux</button><button class="tab" data-tab="tools">Outils</button><button class="tab" data-tab="support">Aide & contact</button></div>
 <section id="home" class="panel active">
-<div class="home-hero home-hero-simple"><div class="home-kicker">✦ TON ESPACE DE RÉVISION</div><h2>Que veux-tu faire ? 👋</h2><p>Choisis un raccourci et commence directement. Pas besoin de chercher dans les menus.</p><div class="home-hero-actions"><button class="home-white" onclick="openLevel('6e','Toutes')">Commencer à réviser →</button></div><div class="home-orbit">✦</div></div>
+<div class="home-hero home-hero-simple"><div class="home-kicker">✦ TON ESPACE DE RÉVISION</div><h2 id="homeGreeting">Que veux-tu faire ? 👋</h2><p id="homeGreetingSub">Ton espace de révision est prêt : retrouve tes cours, tes quiz et tes outils au même endroit.</p><div class="home-hero-actions"><button class="home-white" onclick="openLevel('6e','Toutes')">Commencer à réviser →</button><button class="home-outline" onclick="tab('plus')">Découvrir Premium+ ✦</button></div><div class="home-orbit">✦</div></div>
 <div class="card xp-card"><div class="xp-head"><div><span class="home-eyebrow">TON PARCOURS</span><h2>🏆 Mon niveau EduNova</h2><p id="xpLabel">0 XP • Débutant</p></div><div class="xp-badge" id="xpLevel">Niv. 1</div></div><div class="xp-track"><span id="xpBar"></span></div><p class="small" id="xpNext">Encore 100 XP pour le niveau suivant.</p><div class="xp-achievements" id="achievements"></div></div><div class="home-section-head"><div><span class="home-eyebrow">ACCÈS DIRECT</span><h2>Je veux…</h2></div></div>
 <div class="home-shortcuts home-shortcuts-main">
 <button class="home-shortcut shortcut-fiche" onclick="openLevel('6e','Toutes')"><span>📄</span><b>Fiches de cours</b><small>Lire et comprendre mes leçons</small><i>Ouvrir les fiches →</i></button>
@@ -409,9 +424,9 @@ footer{padding:36px 16px}
 <div class="card backup-card"><span class="home-eyebrow">SÉCURITÉ DE TES DONNÉES</span><h2>💾 Sauvegarder mes révisions</h2><p>Enregistre tes cours, tes cartes, tes notes, ton planning et ta progression dans un fichier. Tu pourras le réimporter si tu changes de téléphone ou de navigateur.</p><div class="actions"><button class="primary" id="exportBackup" type="button">Télécharger ma sauvegarde</button><button class="secondary" id="importBackupBtn" type="button">Restaurer une sauvegarde</button><input id="importBackupFile" type="file" accept="application/json,.json" class="hidden"></div><p class="small" id="backupStatus" aria-live="polite">Tes données restent actuellement enregistrées sur cet appareil. Pense à faire une sauvegarde de temps en temps.</p></div>
 </section><section id="plus" class="panel">
 <div class="plus-hero">
- <div class="plus-kicker">✦ PASSE AU NIVEAU SUPÉRIEUR</div>
- <h2>⭐ EduNova Plus</h2>
- <p>Des révisions plus efficaces, un meilleur suivi et des outils pour préparer tes contrôles et examens. Les bases restent gratuites pour tout le monde.</p>
+ <div class="plus-kicker">✦ TON ESPACE POUR ALLER PLUS LOIN</div>
+ <h2>⭐ Passe à EduNova Premium+</h2>
+ <p>Profite d’une expérience de révision enrichie, avec un accès élargi aux outils EduNova. Tu peux garder l’offre gratuite si tu préfères.</p>
  <div class="plus-promise"><span>📚</span><b>Apprends mieux, pas juste plus longtemps.</b></div>
 </div>
 <div class="plus-section-title"><span>CE QUI FERA LA DIFFÉRENCE</span><h2>Des avantages vraiment utiles</h2><p>Voici les fonctionnalités prévues pour que l'abonnement apporte une vraie valeur.</p></div>
@@ -427,7 +442,7 @@ footer{padding:36px 16px}
 <div class="plus-pricing">
  <article class="plus-plan"><div class="plus-plan-label">POUR COMMENCER</div><h3>Gratuit</h3><div class="plus-price">0 € <small>/ toujours</small></div><p>Pour découvrir EduNova et réviser à ton rythme.</p><ul><li>Fonctions essentielles de révision</li><li>Fiches, exercices et quiz de base</li><li>Outils d'organisation</li></ul><div class="plus-plan-note">L'accès gratuit reste disponible.</div></article>
  <article class="plus-plan"><div class="plus-plan-label">POUR RÉVISER RÉGULIÈREMENT</div><h3>Essentiel</h3><div class="plus-price">2,99 € <small>/ mois</small></div><p>Un accès élargi pour travailler chaque mois.</p><ul><li>Jusqu'à 100 utilisations par mois</li><li>Fonctionnalités incluses dans l'offre Essentiel</li><li>Suivi de tes révisions</li></ul><button class="plus-cta plus-cta-light" type="button" data-edunova-price="price_1Uan3IPNbeiIpf4L7eHT5KQD">S’abonner</button></article>
- <article class="plus-plan plus-plan-featured"><div class="plus-plan-label">ACCÈS COMPLET</div><h3>Premium+</h3><div class="plus-price">19,99 € <small>/ mois</small></div><p>Pour profiter de toute l'expérience EduNova.</p><ul><li>Toutes les fonctionnalités Premium</li><li>Utilisations illimitées</li><li>Accès complet aux outils et contenus Premium</li></ul><button class="plus-cta" type="button" data-edunova-price="price_1Uan8bPNbeiIpf4LYXs4Gp5F">S’abonner</button></article>
+ <article class="plus-plan plus-plan-featured"><div class="plus-plan-label">✦ LE PLUS COMPLET</div><h3>Premium+</h3><div class="plus-price">19,99 € <small>/ mois</small></div><p>Environ 20 € par mois pour profiter de l’expérience Premium+.</p><ul><li>Accès aux fonctionnalités Premium+ disponibles</li><li>Une expérience sans publicité ajoutée par l’offre</li><li>Un espace pensé pour réviser et progresser</li></ul><button class="plus-cta plus-cta-premium" type="button" data-edunova-price="price_1Uan8bPNbeiIpf4LYXs4Gp5F">Passer à Premium+ — 19,99 €/mois</button><div class="plus-plan-note">Paiement sécurisé par Stripe • Abonnement mensuel</div></article>
 </div>
 <div class="plus-faq"><h3>Et si je reste en gratuit ?</h3><p>Aucun problème : tu gardes l'accès aux fonctions essentielles. Plus sert à aller plus loin, pas à bloquer les révisions de base.</p><h3>Est-ce que je peux payer maintenant ?</h3><p>Le bouton « S’abonner » prépare une session Stripe sécurisée après connexion à ton compte EduNova. Si la configuration du serveur de paiement est incomplète, un message d’erreur s’affichera et aucun abonnement ne sera activé. L’accès Premium n’est enregistré qu’après vérification de la confirmation Stripe côté serveur.</p></div>
 <p class="small plus-legal">Prix indicatifs, non contractuels. Comme le public d'EduNova peut être mineur, toute future souscription devra être effectuée avec l'accord d'un parent ou représentant légal.</p>
@@ -1138,9 +1153,11 @@ drawStats();
  async function refresh(){
   const {data:{session},error}=await client.auth.getSession();
   if(error){fail(error);return}
-  if(!session){fields.hidden=false;profile.hidden=true;logout.hidden=true;say("Connecte-toi ou crée ton compte pour enregistrer ton profil.");return}
+  if(!session){fields.hidden=false;profile.hidden=true;logout.hidden=true;const success=el('auth-success');if(success)success.hidden=true;const greeting=el('homeGreeting');if(greeting)greeting.textContent='Que veux-tu faire ? 👋';const greetingSub=el('homeGreetingSub');if(greetingSub)greetingSub.textContent='Ton espace de révision est prêt : retrouve tes cours, tes quiz et tes outils au même endroit.';say("Connecte-toi ou crée ton compte pour enregistrer ton profil.");return}
   fields.hidden=true;logout.hidden=false;
   say("Connecté avec "+(session.user.email||"ton compte")+".");
+  const greeting=el('homeGreeting');if(greeting)greeting.textContent='Ravi de te revoir ! 👋';
+  const greetingSub=el('homeGreetingSub');if(greetingSub)greetingSub.textContent='Ton espace EduNova est prêt. Choisis une matière et continue à progresser.';
   const {data,error:readError}=await client.from('profiles').select('age,institution_type,city,school_level,questionnaire_completed,xp').eq('user_id',session.user.id).maybeSingle();
   if(readError){say("Compte connecté, mais impossible de charger le profil : "+readError.message);profile.hidden=false;return}
   if(data&&Number.isFinite(Number(data.xp))){window.eduNovaCloudXP=true;localStorage.setItem('edunova_xp_v1',String(Math.max(0,Number(data.xp))));if(typeof drawXP==='function')drawXP()}
@@ -1164,8 +1181,12 @@ drawStats();
  el('auth-signin').addEventListener('click',async()=>{
   if(!email()||!password()){say("Entre ton adresse e-mail et ton mot de passe.");return}
   say("Connexion...");
-  const {error}=await client.auth.signInWithPassword({email:email(),password:password()});
+  const {data,error}=await client.auth.signInWithPassword({email:email(),password:password()});
   if(error){fail(error);return}
+  const success=el('auth-success');
+  if(success){success.hidden=false;success.querySelector('b').textContent='Connexion réussie !';success.querySelector('small').textContent='Bienvenue sur EduNova, '+(data.user?.email||email())+'.'}
+  const greeting=el('homeGreeting');if(greeting)greeting.textContent='Ravi de te revoir ! 👋';
+  const greetingSub=el('homeGreetingSub');if(greetingSub)greetingSub.textContent='Tu es connecté à ton espace EduNova. Reprends tes révisions là où tu veux.';
   await refresh();
  });
  el('profile-save').addEventListener('click',async()=>{
@@ -1182,7 +1203,7 @@ drawStats();
  logout.addEventListener('click',async()=>{
   const {error}=await client.auth.signOut();
   if(error){fail(error);return}
-  el('auth-password').value='';await refresh();
+  el('auth-password').value='';const success=el('auth-success');if(success)success.hidden=true;await refresh();say("Déconnexion réussie. À bientôt sur EduNova !");
  });
  client.auth.onAuthStateChange(()=>{setTimeout(refresh,0)});
  refresh();
