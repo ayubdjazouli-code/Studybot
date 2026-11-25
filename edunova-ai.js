@@ -95,8 +95,9 @@
   const displayText=question+(files.length?'\n📷 '+files.length+' photo(s) jointe(s)':'');
   history.push({role:'user',content:displayText});bubble('user',displayText);input.value='';setBusy(true);status.textContent='Préparation de ta demande et de tes photos…';
   const pending=bubble('assistant','Je réfléchis…');
+  let uploadedPaths=[];
   try{
-   const imageRefs=[];let uploadedPaths=[];
+   const imageRefs=[];
    for(const file of files){const path=await preparePhoto(file,currentUser.id);imageRefs.push(path);uploadedPaths.push(path);}
    const apiHistory=history.slice(-12).map((m,i)=>i===history.slice(-12).length-1&&imageRefs.length?{role:'user',content:[{type:'text',text:question||'Analyse ces photos de cours et aide-moi à les comprendre.'},...imageRefs.map(path=>({type:'image_ref',path}))]}:m);
    status.textContent='EduNova AI analyse ta demande'+(files.length?' et '+files.length+' photo(s)':'')+'…';
