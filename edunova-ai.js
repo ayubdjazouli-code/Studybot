@@ -87,12 +87,13 @@
   e.preventDefault();const question=input.value.trim();if((!question&&!photoFiles.length)||send.disabled)return;
   const level=$('assistantLevel')?.value||'Non précisée',subject=$('assistantSubject')?.value||'Toutes matières';
   const files=photoFiles.slice();photoFiles=[];photoInput.value='';renderPhotoSelection();
-  if(!client){status.textContent='Le service de compte est indisponible.';return}
+  const restoreSelectedPhotos=()=>{if(files.length){photoFiles=files.slice();renderPhotoSelection();}};
+  if(!client){restoreSelectedPhotos();status.textContent='Le service de compte est indisponible.';return}
   const {data:{session}}=await client.auth.getSession();
-  if(!session?.access_token){status.textContent='Connecte-toi pour utiliser EduNova AI.';return}
+  if(!session?.access_token){restoreSelectedPhotos();status.textContent='Connecte-toi pour utiliser EduNova AI.';return}
   currentUser=session.user;await refreshPhotoQuota();
-  if(files.length>5){status.textContent='5 photos maximum par message.';return}
-  if(files.length&&!currentPaid&&photoUsed+files.length>6){status.textContent='Tu as atteint les 6 photos gratuites de ce mois. Les offres Essentiel et Premium+ permettent les envois sans quota de nombre.';return}
+  if(files.length>5){restoreSelectedPhotos();status.textContent='5 photos maximum par message.';return}
+  if(files.length&&!currentPaid&&photoUsed+files.length>6){restoreSelectedPhotos();status.textContent='Tu as atteint les 6 photos gratuites de ce mois. Les offres Essentiel et Premium+ permettent les envois sans quota de nombre.';return}
   const displayText=question+(files.length?'\n📷 '+files.length+' photo(s) jointe(s)':'');
   history.push({role:'user',content:displayText});bubble('user',displayText);input.value='';setBusy(true);status.textContent='Préparation de ta demande et de tes photos…';
   const pending=bubble('assistant','Je réfléchis…');
@@ -113,7 +114,7 @@
    if(typeof awardXP==='function')awardXP(2);
   }catch(err){
    pending.classList.add('edai-error');pending.textContent=(err.name==='TimeoutError'?'La demande a pris trop de temps. Réessaie.':err.message||'Impossible de joindre EduNova AI.')+'\n\nSi le service vient d’être installé, vérifie que la fonction Supabase est déployée et que la clé OpenRouter est configurée.';
-   const retry=document.createElement('button');retry.type='button';retry.className='ghost';retry.textContent='Réessayer';retry.addEventListener('click',()=>{input.value=question;updateCounter();form.requestSubmit()});pending.appendChild(retry);
+   const retry=document.createElement('button');retry.type='button';retry.className='ghost';retry.textContent='Réessayer';retry.addEventListener('click',()=>{input.value=question;photoFiles=files.slice();renderPhotoSelection();updateCounter();form.requestSubmit()});pending.appendChild(retry);
    history.pop();if(typeof uploadedPaths!=='undefined'&&uploadedPaths.length){await client.storage.from(BUCKET).remove(uploadedPaths).catch(()=>{});}status.textContent='Échec de la demande.';if(files.length)await refreshPhotoQuota();
   }finally{setBusy(false);input.focus();chat.scrollTop=chat.scrollHeight}
  });
