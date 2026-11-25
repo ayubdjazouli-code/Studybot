@@ -4,8 +4,6 @@
  const SUPABASE_URL='https://aocrfbhgxdrznwqudggi.supabase.co', SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvY3JmYmhneGRyem53cXVkZ2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNzUyNTIsImV4cCI6MjEwOTg1MTI1Mn0.ypPsti6Gg2wmfbQccVN-vs5KewbuV1hrn7vke73zjjg';
  const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_ANON_KEY), BUCKET='edunova-ai-photos';
  if(!form||!input||!chat||!status||!send)return;
- const SUPABASE_URL='https://aocrfbhgxdrznwqudggi.supabase.co';
- const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmciLCJyZWYiOiJhb2NyZmJoZ3hkcnpud3F1ZGdnaSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzk0Mjc1MjUyLCJleHAiOjIxMDk4NTEyNTJ9.ypPsti6Gg2wmfbQccVN-vs5KewbuV1hrn7vke73zjjg';
  const KEY='edunova_ai_history_v1';
 
  const photoStyle=document.createElement('style');photoStyle.textContent='.edai-photo-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:9px 0}.edai-photo-row input{max-width:230px;font-size:.85rem}.edai-photo-quota{font-size:.78rem;color:var(--muted,#667085)}.edai-photo-list{font-size:.82rem;color:var(--muted,#667085);margin:4px 0 9px}.edai-photo-preview{display:flex;gap:8px;flex-wrap:wrap}.edai-photo-preview img{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #dce3ef}';document.head.appendChild(photoStyle);
