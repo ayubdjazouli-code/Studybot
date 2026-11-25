@@ -404,6 +404,12 @@ button,input,textarea,select{max-width:100%}
   <label for="auth-email">Adresse e-mail</label><input id="auth-email" type="email" autocomplete="email" placeholder="ton@email.com">
   <label for="auth-password">Mot de passe</label><input id="auth-password" type="password" autocomplete="current-password" placeholder="Au moins 6 caractères">
   <div class="actions" style="margin-top:12px"><button class="primary" id="auth-signin" type="button">Se connecter</button><button class="secondary" id="auth-signup" type="button">Créer un compte</button></div>
+  <button class="ghost" id="auth-forgot" type="button" style="margin-top:8px">Mot de passe oublié ?</button>
+ </div>
+ <div id="auth-recovery" hidden>
+  <p>Choisis un nouveau mot de passe pour ton compte EduNova.</p>
+  <label for="auth-new-password">Nouveau mot de passe</label><input id="auth-new-password" type="password" autocomplete="new-password" minlength="6" placeholder="Au moins 6 caractères">
+  <button class="primary" id="auth-update-password" type="button" style="margin-top:12px">Enregistrer le nouveau mot de passe</button>
  </div>
  <div id="auth-profile" hidden>
   <p>Ton compte est connecté. Complète ton profil pour personnaliser EduNova.</p>
@@ -1249,7 +1255,7 @@ drawStats();
  let xpSyncTimer=null;
  window.EduNovaSyncXP=value=>{if(!window.eduNovaCloudXP)return;clearTimeout(xpSyncTimer);xpSyncTimer=setTimeout(async()=>{const {data:{user}}=await client.auth.getUser();if(!user)return;const {error}=await client.from('profiles').update({xp:Math.max(0,Math.floor(Number(value)||0))}).eq('user_id',user.id);if(error)console.warn('Synchronisation XP impossible:',error.message)},500)};
  const say=t=>status.textContent=t;
- const fields=el('auth-fields'),profile=el('auth-profile'),logout=el('auth-signout');
+ const fields=el('auth-fields'),profile=el('auth-profile'),logout=el('auth-signout'),recovery=el('auth-recovery');
  const email=()=>el('auth-email').value.trim(),password=()=>el('auth-password').value;
  const fail=e=>say(e?.message||"Une erreur est survenue. Réessaie.");
  async function refresh(){
@@ -1280,6 +1286,25 @@ drawStats();
   if(!data.session)say("Compte créé ! Vérifie ta boîte mail et clique sur le lien de confirmation, puis connecte-toi.");
   else await refresh();
  });
+ el('auth-forgot').addEventListener('click',async()=>{
+  if(!email()){say("Entre ton adresse e-mail pour recevoir le lien de réinitialisation.");el('auth-email').focus();return}
+  say("Envoi de la demande de réinitialisation...");
+  const {error}=await client.auth.resetPasswordForEmail(email(),{redirectTo:location.origin+location.pathname});
+  if(error){fail(error);return}
+  say("Si un compte existe pour cette adresse, un e-mail de réinitialisation va être envoyé. Vérifie aussi les courriers indésirables.");
+ });
+ el('auth-update-password').addEventListener('click',async()=>{
+  const next=el('auth-new-password').value;
+  if(next.length<6){say("Choisis un mot de passe d’au moins 6 caractères.");return}
+  say("Mise à jour du mot de passe...");
+  const {error}=await client.auth.updateUser({password:next});
+  if(error){fail(error);return}
+  el('auth-new-password').value='';
+  await client.auth.signOut();
+  recovery.hidden=true;fields.hidden=false;profile.hidden=true;logout.hidden=true;
+  el('auth-password').value='';
+  say("Mot de passe modifié ! Connecte-toi avec ton nouveau mot de passe.");
+ });
  el('auth-signin').addEventListener('click',async()=>{
   if(!email()||!password()){say("Entre ton adresse e-mail et ton mot de passe.");return}
   say("Connexion...");
@@ -1307,7 +1332,12 @@ drawStats();
   if(error){fail(error);return}
   el('auth-password').value='';const success=el('auth-success');if(success)success.hidden=true;await refresh();say("Déconnexion réussie. À bientôt sur EduNova !");
  });
- client.auth.onAuthStateChange(()=>{setTimeout(refresh,0)});
+ client.auth.onAuthStateChange((event)=>{
+  if(event==='PASSWORD_RECOVERY'){
+   fields.hidden=true;profile.hidden=true;logout.hidden=true;recovery.hidden=false;
+   say("Lien valide. Choisis maintenant ton nouveau mot de passe.");
+  }else setTimeout(refresh,0);
+ });
  refresh();
 })();
 </script>
