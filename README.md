@@ -2,7 +2,7 @@
 
 EduNova est une plateforme web de révision en français destinée aux élèves du collège et du lycée. Elle rassemble des fiches, des exercices, des quiz, des cartes mémoire et plusieurs outils d'apprentissage.
 
-Site : https://ayubdjazouli-code.github.io/Studybot/
+Adresse publique cible : https://edunova.github.io/ (à activer après création de l’organisation GitHub et transfert du dépôt).
 
 ## Fonctionnalités disponibles
 
