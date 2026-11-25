@@ -337,6 +337,61 @@ input,textarea,select{padding:14px}
  .enp-card{padding:18px!important}
 }
 
+
+/* Responsive layout pass: large screens, tablets and phones */
+.wrap{width:min(100% - 32px,1200px);max-width:1200px}
+header .wrap{width:min(100% - 40px,1200px)}
+main.wrap{padding-top:28px}
+.grid{grid-template-columns:minmax(0,1.12fr) minmax(320px,.88fr);gap:24px}
+.card{padding:25px;margin-bottom:21px}
+.tabs{gap:10px}
+.tab{padding:12px 17px}
+.home-subjects{grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.home-shortcuts-main{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.plus-pricing{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.enp-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.enp-card{padding:25px}
+button,input,textarea,select{max-width:100%}
+@media(min-width:1450px){
+ .wrap,header .wrap{width:min(100% - 64px,1280px);max-width:1280px}
+ main.wrap{padding-top:34px}
+ .grid{gap:28px}
+ .card{padding:29px}
+}
+@media(min-width:701px) and (max-width:1024px){
+ .wrap,header .wrap{width:min(100% - 28px,960px)}
+ .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+ .home-subjects{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .home-shortcuts-main{gap:13px}
+ .plus-pricing{gap:14px}
+ .card{padding:19px}
+ .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin}
+ .tab{flex:0 0 auto}
+}
+@media(max-width:700px){
+ .wrap,header .wrap{width:100%;padding-left:13px;padding-right:13px}
+ header{padding:18px 0 27px}
+ main.wrap{padding-top:15px}
+ .grid,.home-shortcuts-main,.plus-pricing{grid-template-columns:minmax(0,1fr);gap:13px}
+ .home-subjects{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ .home-subjects>*{min-width:0}
+ .card{padding:16px;margin-bottom:14px}
+ .enp-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .enp-nav{top:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+ .enp-nav::-webkit-scrollbar{display:none}
+ .enp-nav button{flex:0 0 auto}
+ .home-hero{padding:21px;border-radius:19px}
+ .home-stats{gap:8px}
+ .home-stat{padding:11px}
+ .home-hero-actions button{flex:1 1 140px}
+}
+@media(max-width:380px){
+ .home-subjects{grid-template-columns:1fr}
+ .enp-grid{grid-template-columns:1fr}
+ .stats,.home-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tab{font-size:.82rem;padding:9px 11px}
+}
+
 </style></head><body>
 <a class="skip-link" href="#main-content">Aller au contenu principal</a>
 <header><div class="wrap"><nav aria-label="Navigation principale"><div class="brand"><img src="icons/icon.svg" alt="" style="width:30px;height:30px;vertical-align:middle;border-radius:9px;margin-right:8px">EduNova</div><button id="install" class="secondary hidden">Installer</button></nav><h1>Révise mieux.<br>Sans te compliquer la vie.</h1><p>Transforme tes cours en fiches, cartes mémoire et quiz. Gratuitement.</p></div></header>
