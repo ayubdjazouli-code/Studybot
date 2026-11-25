@@ -6,8 +6,8 @@
  if(!form||!input||!chat||!status||!send)return;
  const KEY='edunova_ai_history_v1';
 
- const photoStyle=document.createElement('style');photoStyle.textContent='.edai-photo-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:9px 0}.edai-photo-row input{max-width:230px;font-size:.85rem}.edai-photo-quota{font-size:.78rem;color:var(--muted,#667085)}.edai-photo-list{font-size:.82rem;color:var(--muted,#667085);margin:4px 0 9px}.edai-photo-preview{display:flex;gap:8px;flex-wrap:wrap}.edai-photo-preview img{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #dce3ef}';document.head.appendChild(photoStyle);
- const photoRow=document.createElement('div');photoRow.className='edai-photo-row';photoRow.innerHTML='<label for="edai-photos" style="margin:0">📷 Joindre des photos</label><input id="edai-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple><span id="edai-photo-quota" class="edai-photo-quota">Connecte-toi pour voir ton quota photo.</span><div id="edai-photo-list" class="edai-photo-list"></div><div id="edai-photo-preview" class="edai-photo-preview"></div>';
+ const photoStyle=document.createElement('style');photoStyle.textContent='.edai-photo-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0;min-width:0}.edai-photo-trigger{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 15px;margin:0!important;border:1px solid #3155c8;border-radius:12px;background:#eef2ff;color:#2444ad;font-weight:750;font-size:.92rem;cursor:pointer;touch-action:manipulation;-webkit-appearance:none}.edai-photo-trigger:active{transform:scale(.98)}.edai-photo-input{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.edai-photo-quota{font-size:.78rem;color:var(--muted,#667085);flex:1 1 100%}.edai-photo-list{font-size:.82rem;color:var(--muted,#667085);margin:4px 0 9px;flex:1 1 100%}.edai-photo-preview{display:flex;gap:8px;flex-wrap:wrap;width:100%}.edai-photo-preview img{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #dce3ef}.dark-mode .edai-photo-trigger{background:#263b63;color:#dce6ff;border-color:#5876bd}';document.head.appendChild(photoStyle);
+ const photoRow=document.createElement('div');photoRow.className='edai-photo-row';photoRow.innerHTML='<label class="edai-photo-trigger" for="edai-photos">📷 Ajouter une photo</label><input class="edai-photo-input" id="edai-photos" type="file" accept="image/*" multiple aria-label="Choisir une ou plusieurs photos"><span id="edai-photo-quota" class="edai-photo-quota">Connecte-toi pour voir ton quota photo.</span><div id="edai-photo-list" class="edai-photo-list"></div><div id="edai-photo-preview" class="edai-photo-preview"></div>';
  form.insertBefore(photoRow,form.querySelector('.edai-form-bottom'));
  const photoInput=$('edai-photos'),photoQuota=$('edai-photo-quota'),photoList=$('edai-photo-list'),photoPreview=$('edai-photo-preview');
  let currentUser=null,currentPaid=false,photoUsed=0,photoFiles=[];
@@ -35,20 +35,34 @@
  refreshPhotoQuota();
  client?.auth.onAuthStateChange(()=>setTimeout(refreshPhotoQuota,0));
  async function preparePhoto(file,userId){
-  if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Format accepté : JPG, PNG ou WebP.');
-  if(file.size>12*1024*1024)throw new Error('Chaque photo doit faire moins de 12 Mo avant compression.');
-  let blob=file;
-  if('createImageBitmap' in window){
-   const bitmap=await createImageBitmap(file);const scale=Math.min(1,1800/Math.max(bitmap.width,bitmap.height));
-   const canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
-   canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
-   blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
+  if(!file.type.startsWith('image/'))throw new Error('Choisis une photo ou une image depuis ton téléphone.');
+  if(file.size>20*1024*1024)throw new Error('Cette photo dépasse 20 Mo. Choisis une image plus légère.');
+  let bitmap=null;
+  try{
+   if('createImageBitmap' in window)bitmap=await createImageBitmap(file);
+   else bitmap=await new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{URL.revokeObjectURL(url);resolve({width:img.naturalWidth,height:img.naturalHeight,drawTo:img})};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Ce format photo n’est pas lisible par ton navigateur. Essaie une image JPG ou PNG.'))};
+    img.src=url;
+   });
+   const width=bitmap.width,height=bitmap.height;
+   if(!width||!height)throw new Error('Impossible de lire les dimensions de cette photo.');
+   const scale=Math.min(1,1800/Math.max(width,height));
+   const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+   const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Préparation photo indisponible sur cet appareil.');
+   ctx.drawImage(bitmap.drawTo||bitmap,0,0,canvas.width,canvas.height);
+   if(typeof bitmap.close==='function')bitmap.close();
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
+   if(!blob)throw new Error('Impossible de convertir cette photo. Essaie une image JPG ou PNG.');
+   const path=userId+'/'+crypto.randomUUID()+'.jpg';
+   const {error}=await client.storage.from(BUCKET).upload(path,blob,{contentType:'image/jpeg',upsert:false});
+   if(error)throw new Error(error.message.includes('row-level security')?'Limite gratuite de 6 photos atteinte ce mois-ci, ou accès refusé.':error.message);
+   return path;
+  }catch(error){
+   if(bitmap&&typeof bitmap.close==='function')bitmap.close();
+   throw error;
   }
-  if(!blob)throw new Error('Impossible de préparer une photo.');
-  const path=userId+'/'+crypto.randomUUID()+'.jpg';
-  const {error}=await client.storage.from(BUCKET).upload(path,blob,{contentType:'image/jpeg',upsert:false});
-  if(error)throw new Error(error.message.includes('row-level security')?'Limite gratuite de 6 photos atteinte ce mois-ci, ou accès refusé.':error.message);
-  return path;
  }
 
  let history=[];
@@ -113,7 +127,7 @@
    pending.textContent=data.reply;addCopyAction(pending,data.reply);history.push({role:'assistant',content:data.reply});history=history.slice(-12);persist();status.textContent='Réponse générée par EduNova AI · modèle actif : '+(data.model||'OpenRouter')+'.';if(files.length)await refreshPhotoQuota();
    if(typeof awardXP==='function')awardXP(2);
   }catch(err){
-   pending.classList.add('edai-error');pending.textContent=(err.name==='TimeoutError'?'La demande a pris trop de temps. Réessaie.':err.message||'Impossible de joindre EduNova AI.')+'\n\nSi le service vient d’être installé, vérifie que la fonction Supabase est déployée et que la clé OpenRouter est configurée.';
+   pending.classList.add('edai-error');pending.textContent=(err.name==='TimeoutError'?'La demande a pris trop de temps. Réessaie.':err.message||'Impossible de joindre EduNova AI.')+'\n\nVérifie que la clé API OpenAI est bien enregistrée dans les secrets Supabase.';
    const retry=document.createElement('button');retry.type='button';retry.className='ghost';retry.textContent='Réessayer';retry.addEventListener('click',()=>{input.value=question;photoFiles=files.slice();renderPhotoSelection();updateCounter();form.requestSubmit()});pending.appendChild(retry);
    history.pop();if(typeof uploadedPaths!=='undefined'&&uploadedPaths.length){await client.storage.from(BUCKET).remove(uploadedPaths).catch(()=>{});}status.textContent='Échec de la demande.';if(files.length)await refreshPhotoQuota();
   }finally{setBusy(false);input.focus();chat.scrollTop=chat.scrollHeight}
