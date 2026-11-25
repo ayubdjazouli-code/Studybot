@@ -7,10 +7,12 @@
  const KEY='edunova_ai_history_v1';
 
  const photoStyle=document.createElement('style');photoStyle.textContent='.edai-photo-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0;min-width:0}.edai-photo-trigger{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 15px;margin:0!important;border:1px solid #3155c8;border-radius:12px;background:#eef2ff;color:#2444ad;font-weight:750;font-size:.92rem;cursor:pointer;touch-action:manipulation;-webkit-appearance:none}.edai-photo-trigger:active{transform:scale(.98)}.edai-photo-input{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.edai-photo-quota{font-size:.78rem;color:var(--muted,#667085);flex:1 1 100%}.edai-photo-list{font-size:.82rem;color:var(--muted,#667085);margin:4px 0 9px;flex:1 1 100%}.edai-photo-preview{display:flex;gap:8px;flex-wrap:wrap;width:100%}.edai-photo-preview img{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #dce3ef}.dark-mode .edai-photo-trigger{background:#263b63;color:#dce6ff;border-color:#5876bd}';document.head.appendChild(photoStyle);
- const photoRow=document.createElement('div');photoRow.className='edai-photo-row';photoRow.innerHTML='<label class="edai-photo-trigger" for="edai-photos">📷 Ajouter une photo</label><input class="edai-photo-input" id="edai-photos" type="file" accept="image/*" multiple aria-label="Choisir une ou plusieurs photos"><span id="edai-photo-quota" class="edai-photo-quota">Connecte-toi pour voir ton quota photo.</span><div id="edai-photo-list" class="edai-photo-list"></div><div id="edai-photo-preview" class="edai-photo-preview"></div>';
+ const photoRow=document.createElement('div');photoRow.className='edai-photo-row';photoRow.innerHTML='<label class="edai-photo-trigger" for="edai-photos">📷 Ajouter une photo</label><input class="edai-photo-input" id="edai-photos" type="file" accept="image/*" multiple aria-label="Choisir une ou plusieurs photos"><label class="edai-photo-trigger" for="edai-files">📎 Ajouter un fichier</label><input class="edai-photo-input" id="edai-files" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.tsv,.txt,.md,.json,.html,.xml,.rtf,.odt" aria-label="Choisir un document"><span id="edai-photo-quota" class="edai-photo-quota">Connecte-toi pour voir ton quota photo.</span><div id="edai-photo-list" class="edai-photo-list"></div><div id="edai-photo-preview" class="edai-photo-preview"></div><div id="edai-file-list" class="edai-photo-list"></div>';
  form.insertBefore(photoRow,form.querySelector('.edai-form-bottom'));
- const photoInput=$('edai-photos'),photoQuota=$('edai-photo-quota'),photoList=$('edai-photo-list'),photoPreview=$('edai-photo-preview');
- let currentUser=null,currentPaid=false,photoUsed=0,photoFiles=[];
+ const photoInput=$('edai-photos'),fileInput=$('edai-files'),fileList=$('edai-file-list'),photoQuota=$('edai-photo-quota'),photoList=$('edai-photo-list'),photoPreview=$('edai-photo-preview');
+ let currentUser=null,currentPaid=false,photoUsed=0,photoFiles=[],selectedFile=null;
+ const allowedFileTypes={pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',ppt:'application/vnd.ms-powerpoint',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',csv:'text/csv',tsv:'text/tab-separated-values',txt:'text/plain',md:'text/markdown',json:'application/json',html:'text/html',xml:'application/xml',rtf:'application/rtf',odt:'application/vnd.oasis.opendocument.text'};
+ fileInput.addEventListener('change',()=>{selectedFile=fileInput.files?.[0]||null;if(selectedFile&&selectedFile.size>3*1024*1024){selectedFile=null;fileInput.value='';fileList.textContent='Fichier trop volumineux : 3 Mo maximum.';status.textContent='Choisis un fichier de 3 Mo maximum.';return}if(selectedFile){const ext=selectedFile.name.split('.').pop().toLowerCase();if(!allowedFileTypes[ext]){selectedFile=null;fileInput.value='';fileList.textContent='Format non pris en charge.';return}fileList.textContent='📎 '+selectedFile.name+' · '+(selectedFile.size/1024/1024).toFixed(2)+' Mo';}else fileList.textContent='';});
  async function refreshPhotoQuota(){
   if(!client){photoQuota.textContent='Service de compte indisponible.';return}
   const {data:{session}}=await client.auth.getSession();currentUser=session?.user||null;
@@ -98,25 +100,26 @@
  $('edai-clear')?.addEventListener('click',()=>{history=[];try{sessionStorage.removeItem(KEY)}catch{}draw();status.textContent='Nouvelle conversation prête.';input.focus()});
  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
  form.addEventListener('submit',async e=>{
-  e.preventDefault();const question=input.value.trim();if((!question&&!photoFiles.length)||send.disabled)return;
+  e.preventDefault();const question=input.value.trim();if((!question&&!photoFiles.length&&!selectedFile)||send.disabled)return;
   const level=$('assistantLevel')?.value||'Non précisée',subject=$('assistantSubject')?.value||'Toutes matières';
-  const files=photoFiles.slice();photoFiles=[];photoInput.value='';renderPhotoSelection();
-  const restoreSelectedPhotos=()=>{if(files.length){photoFiles=files.slice();renderPhotoSelection();}};
+  const files=photoFiles.slice(),documentFile=selectedFile;photoFiles=[];selectedFile=null;photoInput.value='';fileInput.value='';fileList.textContent='';renderPhotoSelection();
+  const restoreSelectedPhotos=()=>{if(files.length){photoFiles=files.slice();renderPhotoSelection();}if(documentFile){selectedFile=documentFile;fileList.textContent='📎 '+documentFile.name;}};
   if(!client){restoreSelectedPhotos();status.textContent='Le service de compte est indisponible.';return}
   const {data:{session}}=await client.auth.getSession();
   if(!session?.access_token){restoreSelectedPhotos();status.textContent='Connecte-toi pour utiliser EduNova AI.';return}
   currentUser=session.user;await refreshPhotoQuota();
   if(files.length>5){restoreSelectedPhotos();status.textContent='5 photos maximum par message.';return}
   if(files.length&&!currentPaid&&photoUsed+files.length>6){restoreSelectedPhotos();status.textContent='Tu as atteint les 6 photos gratuites de ce mois. Les offres Essentiel et Premium+ permettent les envois sans quota de nombre.';return}
-  const displayText=question+(files.length?'\n📷 '+files.length+' photo(s) jointe(s)':'');
+  const displayText=question+(files.length?'\n📷 '+files.length+' photo(s) jointe(s)':'')+(documentFile?'\n📎 '+documentFile.name:'');
   history.push({role:'user',content:displayText});bubble('user',displayText);input.value='';setBusy(true);status.textContent='Préparation de ta demande et de tes photos…';
   const pending=bubble('assistant','Je réfléchis…');
   let uploadedPaths=[];
   try{
    const imageRefs=[];
    for(const file of files){const path=await preparePhoto(file,currentUser.id);imageRefs.push(path);uploadedPaths.push(path);}
-   const apiHistory=history.slice(-12).map((m,i)=>i===history.slice(-12).length-1&&imageRefs.length?{role:'user',content:[{type:'text',text:question||'Analyse ces photos de cours et aide-moi à les comprendre.'},...imageRefs.map(path=>({type:'image_ref',path}))]}:m);
-   status.textContent='EduNova AI analyse ta demande'+(files.length?' et '+files.length+' photo(s)':'')+'…';
+   const filePayload=documentFile?await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const value=String(reader.result||'');resolve({type:'file_ref',filename:documentFile.name,mime:allowedFileTypes[documentFile.name.split('.').pop().toLowerCase()],data:value.slice(value.indexOf(',')+1)});};reader.onerror=()=>reject(new Error('Impossible de lire ce fichier sur cet appareil.'));reader.readAsDataURL(documentFile);}):null;
+   const apiHistory=history.slice(-12).map((m,i)=>i===history.slice(-12).length-1&&(imageRefs.length||filePayload)?{role:'user',content:[{type:'text',text:question||'Analyse le document et aide-moi à le comprendre.'},...imageRefs.map(path=>({type:'image_ref',path})),...(filePayload?[filePayload]:[])]}:m);
+   status.textContent='EduNova AI analyse ta demande'+(files.length?' et '+files.length+' photo(s)':'')+(documentFile?' et ton fichier':'')+'…';
    const response=await fetch(SUPABASE_URL+'/functions/v1/edunova-ai',{
     method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+session.access_token},
     body:JSON.stringify({level,subject,messages:apiHistory}),signal:AbortSignal.timeout(65000)
