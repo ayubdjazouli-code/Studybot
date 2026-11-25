@@ -1,4 +1,4 @@
-name: Deploy StudyBot to GitHub Pages
+name: Deploy EduNova to GitHub Pages
 
 on:
   push:
