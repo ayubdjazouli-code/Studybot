@@ -127,7 +127,7 @@
    const data=await response.json().catch(()=>({}));
    if(!response.ok)throw new Error(data.error||'Le service IA est momentanément indisponible (HTTP '+response.status+').');
    if(typeof data.reply!=='string'||!data.reply.trim())throw new Error('La réponse reçue est vide. Réessaie.');
-   pending.textContent=data.reply;addCopyAction(pending,data.reply);history.push({role:'assistant',content:data.reply});history=history.slice(-12);persist();status.textContent='Réponse générée par EduNova AI · modèle actif : '+(data.model||'OpenRouter')+'.';if(files.length)await refreshPhotoQuota();
+   pending.textContent=data.reply;addCopyAction(pending,data.reply);history.push({role:'assistant',content:data.reply});history=history.slice(-12);persist();status.textContent='Réponse générée par EduNova AI · modèle actif : '+(data.model||'OpenAI')+'.';if(files.length)await refreshPhotoQuota();
    if(typeof awardXP==='function')awardXP(2);
   }catch(err){
    pending.classList.add('edai-error');pending.textContent=(err.name==='TimeoutError'?'La demande a pris trop de temps. Réessaie.':err.message||'Impossible de joindre EduNova AI.')+'\n\nVérifie que la clé API OpenAI est bien enregistrée dans les secrets Supabase.';
