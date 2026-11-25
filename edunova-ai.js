@@ -90,6 +90,7 @@
   if(!client){status.textContent='Le service de compte est indisponible.';return}
   const {data:{session}}=await client.auth.getSession();
   if(!session?.access_token){status.textContent='Connecte-toi pour utiliser EduNova AI.';return}
+  currentUser=session.user;await refreshPhotoQuota();
   if(files.length>5){status.textContent='5 photos maximum par message.';return}
   if(files.length&&!currentPaid&&photoUsed+files.length>6){status.textContent='Tu as atteint les 6 photos gratuites de ce mois. Les offres Essentiel et Premium+ permettent les envois sans quota de nombre.';return}
   const displayText=question+(files.length?'\n📷 '+files.length+' photo(s) jointe(s)':'');
