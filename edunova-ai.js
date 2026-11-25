@@ -96,8 +96,8 @@
   history.push({role:'user',content:displayText});bubble('user',displayText);input.value='';setBusy(true);status.textContent='Préparation de ta demande et de tes photos…';
   const pending=bubble('assistant','Je réfléchis…');
   try{
-   const imageRefs=[];
-   for(const file of files){imageRefs.push(await preparePhoto(file,currentUser.id));}
+   const imageRefs=[];let uploadedPaths=[];
+   for(const file of files){const path=await preparePhoto(file,currentUser.id);imageRefs.push(path);uploadedPaths.push(path);}
    const apiHistory=history.slice(-12).map((m,i)=>i===history.slice(-12).length-1&&imageRefs.length?{role:'user',content:[{type:'text',text:question||'Analyse ces photos de cours et aide-moi à les comprendre.'},...imageRefs.map(path=>({type:'image_ref',path}))]}:m);
    status.textContent='EduNova AI analyse ta demande'+(files.length?' et '+files.length+' photo(s)':'')+'…';
    const response=await fetch(SUPABASE_URL+'/functions/v1/edunova-ai',{
@@ -112,7 +112,7 @@
   }catch(err){
    pending.classList.add('edai-error');pending.textContent=(err.name==='TimeoutError'?'La demande a pris trop de temps. Réessaie.':err.message||'Impossible de joindre EduNova AI.')+'\n\nSi le service vient d’être installé, vérifie que la fonction Supabase est déployée et que la clé OpenRouter est configurée.';
    const retry=document.createElement('button');retry.type='button';retry.className='ghost';retry.textContent='Réessayer';retry.addEventListener('click',()=>{input.value=question;updateCounter();form.requestSubmit()});pending.appendChild(retry);
-   history.pop();status.textContent='Échec de la demande.';if(files.length)await refreshPhotoQuota();
+   history.pop();if(typeof uploadedPaths!=='undefined'&&uploadedPaths.length){await client.storage.from(BUCKET).remove(uploadedPaths).catch(()=>{});}status.textContent='Échec de la demande.';if(files.length)await refreshPhotoQuota();
   }finally{setBusy(false);input.focus();chat.scrollTop=chat.scrollHeight}
  });
  draw();
