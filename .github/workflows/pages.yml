@@ -23,6 +23,67 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Validate JavaScript, metadata and sitemap
+        run: |
+          set -e
+          for file in edunova-ai.js edunova-boost.js edunova-dashboard.js edunova-motivation.js edunova-premium.js edunova-studio.js; do
+            node --check "$file"
+          done
+          python - <<'PY'
+          import json
+          import subprocess
+          import tempfile
+          import xml.etree.ElementTree as ET
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          json.loads(Path("manifest.webmanifest").read_text(encoding="utf-8"))
+          sitemap = ET.parse("sitemap.xml").getroot()
+          urls = [node.text for node in sitemap if node.tag.endswith("loc")]
+          assert urls and all(url and url.startswith("https://ayubdjazouli-code.github.io/Studybot/") for url in urls), "Sitemap URL missing or outside the live site"
+
+          class ScriptParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.scripts = []
+                  self.current = None
+                  self.canonical = 0
+                  self.title = False
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag == "script":
+                      self.current = {"type": attrs.get("type", "").lower(), "src": attrs.get("src"), "parts": []}
+                  if tag == "link" and "canonical" in attrs.get("rel", "").lower().split():
+                      self.canonical += 1
+                  if tag == "title":
+                      self.title = True
+              def handle_data(self, data):
+                  if self.current is not None:
+                      self.current["parts"].append(data)
+              def handle_endtag(self, tag):
+                  if tag == "script" and self.current is not None:
+                      self.scripts.append(self.current)
+                      self.current = None
+                  if tag == "title":
+                      self.title = False
+
+          for page in sorted(Path(".").glob("*.html")):
+              parser = ScriptParser()
+              parser.feed(page.read_text(encoding="utf-8"))
+              assert parser.canonical == 1, f"{page}: expected exactly one canonical link"
+              for index, script in enumerate(parser.scripts):
+                  source = "".join(script["parts"]).strip()
+                  if not source or script["src"]:
+                      continue
+                  if script["type"] == "application/ld+json":
+                      json.loads(source)
+                  elif script["type"] in ("", "text/javascript", "application/javascript", "module"):
+                      with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8") as tmp:
+                          tmp.write(source)
+                          tmp.flush()
+                          subprocess.run(["node", "--check", tmp.name], check=True)
+          print(f"Validation OK: {len(urls)} sitemap URLs and {len(list(Path('.').glob('*.html')))} HTML pages.")
+          PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
